@@ -110,3 +110,9 @@ If this is a Related App, it will be a `development` phase app in the Related Ap
 ```
 myorg-devapp-pr-number-relatedapp
 ```
+
+## Auto-deployment of updates to Related Apps
+
+We can't orchestrate this by API yet - the GitHub integration for Heroku Pipelines doesn't have this API properly exposed. For now, if you want automatic deploys to your Related Apps, you can do that with a few clicks on the Related App itself, within it's pipeline.
+
+If you do this, you should understand that the Related Apps may change without warning, as PRs are merged into their master branches.
