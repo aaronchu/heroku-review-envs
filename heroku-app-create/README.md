@@ -111,7 +111,13 @@ If this is a Related App, it will be a `development` phase app in the Related Ap
 myorg-devapp-pr-number-relatedapp
 ```
 
-## Auto-deployment of updates to Related Apps
+## Known Issues
+
+### Detection of Buildpacks for Elixir Apps
+
+You must specify the buildpacks in the configuration of another app in the pipeline (we did this in a `staging` phase app), in order for the buildpacks to be picked up - even if they're specified in the `app.json` file.
+
+### Auto-deployment of updates to Related Apps
 
 We can't orchestrate this by API yet - the GitHub integration for Heroku Pipelines doesn't have this API properly exposed. For now, if you want automatic deploys to your Related Apps, you can do that with a few clicks on the Related App itself, within it's pipeline.
 
