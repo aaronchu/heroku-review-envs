@@ -1,12 +1,12 @@
 FROM debian:9.5-slim
 
-LABEL "com.github.actions.name"="Hello World"
-LABEL "com.github.actions.description"="Write arguments to the standard output"
+LABEL "com.github.actions.name"="Heroku Create Microservice Review App"
+LABEL "com.github.actions.description"="Create a Review App for Microservices Environment"
 LABEL "com.github.actions.icon"="mic"
-LABEL "com.github.actions.color"="purple"
+LABEL "com.github.actions.color"="blue"
 
-LABEL "repository"="http://github.com/TheRealReal/github-actions-test"
-LABEL "homepage"="http://github.com/actions"
+LABEL "repository"="http://github.com/TheRealReal/heroku-review-envs"
+LABEL "homepage"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
 RUN \
