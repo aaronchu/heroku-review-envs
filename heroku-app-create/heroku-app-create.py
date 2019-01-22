@@ -159,13 +159,12 @@ def get_config_vars_for_app( app_id ):
 def set_config_vars_for_app( app_id, config_vars ):
     r = requests.patch(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku, data=json.dumps(config_vars))
     result = json.loads(r.text)
-    print(json.dumps(result, sort_keys=True, indent=4))
     if r.status_code != 200:
         return None
     for key, value in result.items():
         if key in config_vars and result[key] != config_vars[key]:
             return None
-    return config_vars
+    return len(config_vars)
 
 def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
     # this uses an unpublished heroku API - this is provided probably by the
@@ -449,8 +448,13 @@ else:
             config_vars = get_config_vars_for_app( cv_src_app['id'] )
             if not config_vars:
                 sys.exit("Pulled no config vars from app: "+args['CONFIG_VARS_FROM'])
-            if not set_config_vars_for_app( app_id, config_vars ):
+            else:
+                print ("Found %s Config Vars to set." % len(config_vars))
+            num_set = set_config_vars_for_app( app_id, config_vars )
+            if num_set == 0:
                 sys.exit("Couldn't set config vars for app: "+app['name'])
+            else:
+                print ("App now has %s Config Vars" % num_set)
 
         # deploy to the app
         print ("Deploying...")
