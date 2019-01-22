@@ -77,6 +77,7 @@ In order to supply arguments to this action, use a format similar to environment
 * `BRANCH` - **Required.** The branch of the microservice that you need deployed.
 * `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another microservice. See the below section on how to use this.
 * `CONFIG_VARS_FROM` - **Optional.** This will work for **Related Apps only.** Copy the `config_var`s from another Heroku app. This happens before any `config_var`s are set as a result of `MSVC_REF`, and only happens when the Related App is spun up - not on subsequent deploys.
+* `BUILDPACKS` - **Optional.** This will work for **Related Apps only.** This is a comma-separated list of buildpack URLs. This is necessary for the development phase apps which do not pick up their buildpacks properly from `app.json`.
 
 ## Referencing Microservices
 

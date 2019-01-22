@@ -166,6 +166,18 @@ def set_config_vars_for_app( app_id, config_vars ):
             return None
     return config_vars
 
+def add_buildpacks_to_app( app_id, buildpack_urls ):
+    buildpack_changes = {
+        'updates': [{ 'buildpack': x } for x in buildpack_urls]
+    }
+    buildpack_changes['updates']
+    r = requests.put(api_url_heroku+'/apps/'+app_id+'/buildpack-installations', headers=headers_heroku, data=json.dumps(buildpack_changes))
+    result = json.loads(r.text)
+    if r.status_code != 200:
+        return None
+    return result
+
+
 def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
     # this uses an unpublished heroku API - this is provided probably by the
     # Heroku GitHub integration
@@ -270,6 +282,7 @@ for arg in sys.argv:
 # for quick testing, we want these to be alternatively passed in via environment
 args_or_envs = [
     'BRANCH',
+    'BUILDPACKS',
     'CONFIG_VARS_FROM',
     'HEROKU_TEAM_NAME',
     'HEROKU_PIPELINE_NAME',
@@ -438,6 +451,16 @@ else:
         print ("Attaching to pipeline...")
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
+
+        # set the buildpacks, if so requested
+        if 'BUILDPACKS' in args:
+            print("Adding buildpacks to app " + app['name'])
+            bps = add_buildpacks_to_app( app['id'], args['BUILDPACKS'].split(',') )
+            print(json.dumps(bps, sort_keys=True, indent=4))
+            if not bps:
+                sys.exit("Couldn't add buildpacks to app %s." % app['name'])
+            else:
+                print("App %s added buildpacks." % app['name'])
 
         # set the config vares from a source app, if so requested
         if 'CONFIG_VARS_FROM' in args:
