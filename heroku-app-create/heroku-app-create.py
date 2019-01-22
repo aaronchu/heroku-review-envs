@@ -7,6 +7,11 @@ import re
 import sys
 import time
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+
 # some constants
 timeout = 20
 microservice_suffix = '.herokuapp.com'
@@ -25,13 +30,20 @@ headers_heroku = {
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
-api_url_heroku = 'https://api.heroku.com'
+headers_heroku_review_pipelines = {
+    'Accept': 'application/vnd.heroku+json; version=3.pipelines',
+    'Authorization': 'Bearer %s' % heroku_token,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
 headers_heroku_github = {
     'Accept': 'application/vnd.heroku+json; version=3',
     'Authorization': 'Bearer %s' % heroku_token,
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
     'Content-Type': 'application/json'
     }
+
+api_url_heroku = 'https://api.heroku.com'
 api_url_heroku_github = 'https://kolkrabbi.heroku.com'
 
 def get_review_app_by_branch( pipeline_id, branch_name ):
@@ -177,6 +189,10 @@ def add_buildpacks_to_app( app_id, buildpack_urls ):
         return None
     return result
 
+def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
+    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=headers_heroku_review_pipelines)
+    config_vars = json.loads(r.text)
+    return config_vars
 
 def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
     # this uses an unpublished heroku API - this is provided probably by the
@@ -283,7 +299,6 @@ for arg in sys.argv:
 args_or_envs = [
     'BRANCH',
     'BUILDPACKS',
-    'CONFIG_VARS_FROM',
     'HEROKU_TEAM_NAME',
     'HEROKU_PIPELINE_NAME',
     'REPO',
@@ -462,22 +477,18 @@ else:
             else:
                 print("App %s added buildpacks." % app['name'])
 
-        # set the config vares from a source app, if so requested
-        if 'CONFIG_VARS_FROM' in args:
-            print ("Pulling Config Vars from "+args['CONFIG_VARS_FROM'])
-            cv_src_app = get_app_by_name( args['CONFIG_VARS_FROM'] )
-            if not cv_src_app or 'id' not in cv_src_app:
-                sys.exit("Couldn't find the source app for the Config Vars")
-            config_vars = get_config_vars_for_app( cv_src_app['id'] )
-            if not config_vars:
-                sys.exit("Pulled no config vars from app: "+args['CONFIG_VARS_FROM'])
-            else:
-                print ("Found %s Config Vars to set." % len(config_vars.keys()))
-            set_config_vars = set_config_vars_for_app( app_id, config_vars )
-            if not set_config_vars:
-                sys.exit("Couldn't set config vars for app: "+app['name'])
-            else:
-                print ("App now has %s Config Vars" % len(set_config_vars.keys()))
+        # set the config vars from review apps beta config vars
+        print ("Pulling Config Vars from pipeline "+pipeline['name'])
+        config_vars = get_review_app_config_vars_for_pipeline( pipeline['id'], 'review' )
+        if not config_vars:
+            sys.exit("Pulled no config vars from pipeline: "+pipeline['name'])
+        else:
+            print ("Found %s Config Vars to set." % len(config_vars.keys()))
+        set_config_vars = set_config_vars_for_app( app_id, config_vars )
+        if not set_config_vars:
+            sys.exit("Couldn't set config vars for app: "+app['name'])
+        else:
+            print ("App now has %s Config Vars" % len(set_config_vars.keys()))
 
         # deploy to the app
         print ("Deploying...")
