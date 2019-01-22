@@ -164,7 +164,7 @@ def set_config_vars_for_app( app_id, config_vars ):
     for key, value in result.items():
         if key in config_vars and result[key] != config_vars[key]:
             return None
-    return len(config_vars)
+    return config_vars
 
 def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
     # this uses an unpublished heroku API - this is provided probably by the
@@ -449,12 +449,12 @@ else:
             if not config_vars:
                 sys.exit("Pulled no config vars from app: "+args['CONFIG_VARS_FROM'])
             else:
-                print ("Found %s Config Vars to set." % len(config_vars))
-            num_set = set_config_vars_for_app( app_id, config_vars )
-            if num_set == 0:
+                print ("Found %s Config Vars to set." % len(config_vars.keys()))
+            set_config_vars = set_config_vars_for_app( app_id, config_vars )
+            if not set_config_vars:
                 sys.exit("Couldn't set config vars for app: "+app['name'])
             else:
-                print ("App now has %s Config Vars" % num_set)
+                print ("App now has %s Config Vars" % len(set_config_vars.keys()))
 
         # deploy to the app
         print ("Deploying...")
