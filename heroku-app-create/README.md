@@ -9,6 +9,8 @@ This is suited to use when you are developing changes to one microservice in a m
 
 You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other microservices either by calling them or being called by them. Those other microservices are called `Related Apps or Services`.
 
+This GitHub Action deploys both of those types of apps into your Heroku account.
+
 ## Usage
 
 Example usage when deploying a Development App:
