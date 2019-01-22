@@ -54,8 +54,12 @@ action "create-mymicrosvc" {
 
 ## Secrets
 
-* `HEROKU_API_TOKEN` - **Required.** Token for commnunication with Heroku API.
-* `GHA_USER_TOKEN` - **Required.** Token for commnunication with GitHub API. Since the `GITHUB_TOKEN` is limited in scope to the Development App repo, you need an API token scoped to your repositories in order to deploy from other repos.
+* `HEROKU_API_TOKEN` - **Required.** Token for communication with Heroku API.
+  * This should be bound to a service or role user on your Heroku Team.
+  * This user must have view access to an existing app in each pipeline used here.
+  * If you're using the `CONFIG_VARS_FROM` functionality, this user needs to have `deploy` privileges on the app that you're copying `config_var`s from.
+* `GHA_USER_TOKEN` - **Required.** Token for communication with GitHub API.
+  * Since the `GITHUB_TOKEN` is limited in scope to the Development App repo, you need an API token scoped to your repositories in order to deploy from those other repos.
 
 ## Arguments
 
@@ -70,6 +74,7 @@ In order to supply arguments to this action, use a format similar to environment
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
 * `BRANCH` - **Required.** The branch of the microservice that you need deployed.
 * `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another microservice. See the below section on how to use this.
+* `CONFIG_VARS_FROM` - **Optional.** This will work for **Related Apps only.** Copy the `config_var`s from another Heroku app. This happens before any `config_var`s are set as a result of `MSVC_REF`, and only happens when the Related App is spun up - not on subsequent deploys.
 
 ## Referencing Microservices
 

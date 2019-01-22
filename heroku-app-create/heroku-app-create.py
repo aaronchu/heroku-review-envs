@@ -142,7 +142,7 @@ def deploy_to_app( app_id, source_code_tgz_url, commit_sha ):
         return None
 
 def get_features_for_app( app_id ):
-    r = requests.get(api_url_heroku+'/apps'+app_id+'/features', headers=headers_heroku)
+    r = requests.get(api_url_heroku+'/apps/'+app_id+'/features', headers=headers_heroku)
     features = json.loads(r.text)
     try:
         if features[0]['id'] and features[0]['doc_url']:
@@ -150,6 +150,22 @@ def get_features_for_app( app_id ):
     except:
         pass
     return None
+
+def get_config_vars_for_app( app_id ):
+    r = requests.get(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku)
+    config_vars = json.loads(r.text)
+    return config_vars
+
+def set_config_vars_for_app( app_id, config_vars ):
+    r = requests.patch(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku, data=json.dumps(config_vars))
+    result = json.loads(r.text)
+    print(json.dumps(result, sort_keys=True, indent=4))
+    if r.status_code != 200:
+        return None
+    for key, value in result.items():
+        if key in config_vars and result[key] != config_vars[key]:
+            return None
+    return config_vars
 
 def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
     # this uses an unpublished heroku API - this is provided probably by the
@@ -255,6 +271,7 @@ for arg in sys.argv:
 # for quick testing, we want these to be alternatively passed in via environment
 args_or_envs = [
     'BRANCH',
+    'CONFIG_VARS_FROM',
     'HEROKU_TEAM_NAME',
     'HEROKU_PIPELINE_NAME',
     'REPO',
@@ -422,6 +439,18 @@ else:
         print ("Attaching to pipeline...")
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
+
+        # set the config vares from a source app, if so requested
+        if 'CONFIG_VARS_FROM' in args:
+            print ("Pulling Config Vars from "+args['CONFIG_VARS_FROM'])
+            cv_src_app = get_app_by_name( args['CONFIG_VARS_FROM'] )
+            if not cv_src_app or 'id' not in cv_src_app:
+                sys.exit("Couldn't find the source app for the Config Vars")
+            config_vars = get_config_vars_for_app( cv_src_app['id'] )
+            if not config_vars:
+                sys.exit("Pulled no config vars from app: "+args['CONFIG_VARS_FROM'])
+            if not set_config_vars_for_app( app_id, config_vars ):
+                sys.exit("Couldn't set config vars for app: "+app['name'])
 
         # deploy to the app
         print ("Deploying...")
