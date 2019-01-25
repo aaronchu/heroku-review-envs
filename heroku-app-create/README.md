@@ -75,7 +75,7 @@ In order to supply arguments to this action, use a format similar to environment
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
 * `BRANCH` - **Required.** The branch of the microservice that you need deployed.
 * `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another microservice. See the below section on how to use this.
-* `BUILDPACKS` - **Optional.** This will work for **Related Apps only.** This is a comma-separated list of buildpack URLs. This is necessary for the development phase apps which do not pick up their buildpacks properly from `app.json`.
+* `BUILDPACKS` - **Optional.** This will work for **Related Apps only.** This is a comma-separated list of buildpack URLs. This is necessary for the development phase apps which do not pick up their buildpacks properly from `app.json`. **This may not be needed any longer as we've started to use the `/app-setups` endpoint for spinning things up and it seems to read `app.json` just fine.**
 
 ## Referencing Microservices
 

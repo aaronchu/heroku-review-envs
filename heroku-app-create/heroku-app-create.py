@@ -68,6 +68,11 @@ def get_review_app_by_id( pipeline_id, id ):
         pass
     return None
 
+def get_app_setup_by_id( app_setup_id ):
+    r = requests.get(api_url_heroku+'/app-setups/'+app_setup_id, headers=headers_heroku)
+    app_setup = json.loads(r.text)
+    return app_setup
+
 def get_app_by_name( app_name ):
     r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
     apps = json.loads(r.text)
@@ -122,6 +127,25 @@ def create_team_app( name, team ):
     print(json.dumps(app, sort_keys=True, indent=4))
     if 'id' in app:
         return app
+    else:
+        return None
+
+def create_app_setup( name, team, source_code_tgz_url, commit_sha ):
+    payload = {
+        'source_blob': {
+            'url': source_code_tgz_url,
+            'version': commit_sha,
+        },
+        'app': {
+            'name': name,
+            'organization': team,
+        },
+    }
+    r = requests.post(api_url_heroku+'/app-setups', headers=headers_heroku, data=json.dumps(payload))
+    app_setup = json.loads(r.text)
+    print(json.dumps(app_setup, sort_keys=True, indent=4))
+    if 'id' in app_setup:
+        return app_setup
     else:
         return None
 
@@ -456,11 +480,27 @@ else:
     else:
         # this is a related microservice, deploy it as a development app
         print ("Creating development phase app...")
-        app = create_team_app( app_name, args['HEROKU_TEAM_NAME'] )
-        if app is None:
-            sys.exit("Couldn't create app named " + app_name)
-        print ("Created app " + app['name'] + " id: " + app['id'])
-        app_id = app['id']
+
+        # an app-setup is just like a reviewapp like above. It is almost like
+        # and environment setup in that it creates the app, reads app.json and
+        # performs the necessary spin-ups and attachments.
+        app_setup = create_app_setup( app_name, args['HEROKU_TEAM_NAME'], source_code_tgz, commit_sha )
+
+        # look up the app ID, wait for it to show up
+        for i in range(0, timeout):
+            print ("Checking for app spawn...")
+            app_setup = get_app_setup_by_id( app_setup['id'] )
+            if app_setup is not None:
+                app_id = app_setup['app']['id']
+                break
+            time.sleep(1)
+            if i == timeout:
+                sys.exit("timed out waiting for app to instantiate.")
+            else:
+                print ("waiting...")
+        print ("Result:")
+        print(json.dumps(app_setup, sort_keys=True, indent=4))
+        app = app_setup['app']
 
         # attach to pipeline as development app
         print ("Attaching to pipeline...")
@@ -468,14 +508,14 @@ else:
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
         # set the buildpacks, if so requested
-        if 'BUILDPACKS' in args:
-            print("Adding buildpacks to app " + app['name'])
-            bps = add_buildpacks_to_app( app['id'], args['BUILDPACKS'].split(',') )
-            print(json.dumps(bps, sort_keys=True, indent=4))
-            if not bps:
-                sys.exit("Couldn't add buildpacks to app %s." % app['name'])
-            else:
-                print("App %s added buildpacks." % app['name'])
+        # if 'BUILDPACKS' in args:
+        #     print("Adding buildpacks to app " + app['name'])
+        #     bps = add_buildpacks_to_app( app['id'], args['BUILDPACKS'].split(',') )
+        #     print(json.dumps(bps, sort_keys=True, indent=4))
+        #     if not bps:
+        #         sys.exit("Couldn't add buildpacks to app %s." % app['name'])
+        #     else:
+        #         print("App %s added buildpacks." % app['name'])
 
         # set the config vars from review apps beta config vars
         print ("Pulling Config Vars from pipeline "+pipeline['name'])
@@ -489,16 +529,6 @@ else:
             sys.exit("Couldn't set config vars for app: "+app['name'])
         else:
             print ("App now has %s Config Vars" % len(set_config_vars.keys()))
-
-        # deploy to the app
-        print ("Deploying...")
-        try:
-            response = deploy_to_app( app['id'], source_code_tgz, commit_sha )
-            print ("Created Build:")
-            print(json.dumps(response, sort_keys=True, indent=4))
-            print ("Status is currently " + response['status'])
-        except:
-            sys.exit("Couldn't deploy to app id " + reviewapp['id'])
 
         # # set automatic deployment - need ot find out how to do this right
         # if set_auto_deploy( pipeline['id'], app['id'], branch_name=branch, enable=True ):
