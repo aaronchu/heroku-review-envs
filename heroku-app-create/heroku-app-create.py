@@ -7,11 +7,6 @@ import re
 import sys
 import time
 
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
-
-
 # some constants
 timeout = 20
 microservice_suffix = '.herokuapp.com'
@@ -138,9 +133,10 @@ def create_app_setup( name, team, source_code_tgz_url, commit_sha ):
         },
         'app': {
             'name': name,
-            'organization': team,
+            'organization': team
         },
     }
+    print(json.dumps(payload, sort_keys=True, indent=4))
     r = requests.post(api_url_heroku+'/app-setups', headers=headers_heroku, data=json.dumps(payload))
     app_setup = json.loads(r.text)
     print(json.dumps(app_setup, sort_keys=True, indent=4))
