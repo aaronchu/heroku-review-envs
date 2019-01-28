@@ -125,7 +125,7 @@ def create_team_app( name, team ):
     else:
         return None
 
-def create_app_setup( name, team, source_code_tgz_url, commit_sha ):
+def create_app_setup( name, team, source_code_tgz_url, commit_sha, envs ):
     payload = {
         'source_blob': {
             'url': source_code_tgz_url,
@@ -135,6 +135,9 @@ def create_app_setup( name, team, source_code_tgz_url, commit_sha ):
             'name': name,
             'organization': team
         },
+        'overrides': {
+            'env': envs
+        }
     }
     print(json.dumps(payload, sort_keys=True, indent=4))
     r = requests.post(api_url_heroku+'/app-setups', headers=headers_heroku, data=json.dumps(payload))
@@ -439,7 +442,9 @@ else:
                 'url': source_code_tgz,
                 'version': commit_sha,
             },
-            'environment': {}
+            'environment': {
+                'HEROKU_APP_NAME': app_name
+            }
         }
         print(json.dumps(payload, sort_keys=True, indent=4))
         try:
@@ -477,10 +482,21 @@ else:
         # this is a related microservice, deploy it as a development app
         print ("Creating development phase app...")
 
+        # get the config vars from review apps beta config vars in the pipeline
+        # we have a feature request in to Heroku for a list of default config
+        # vars for development phase apps
+        print ("Pulling Config Vars from pipeline "+pipeline['name'])
+        config_vars = get_review_app_config_vars_for_pipeline( pipeline['id'], 'review' )
+        config_vars['HEROKU_APP_NAME'] = app_name
+        if not config_vars:
+            sys.exit("Pulled no config vars from pipeline: "+pipeline['name'])
+        else:
+            print ("Found %s Config Vars to set." % len(config_vars.keys()))
+
         # an app-setup is just like a reviewapp like above. It is almost like
         # and environment setup in that it creates the app, reads app.json and
         # performs the necessary spin-ups and attachments.
-        app_setup = create_app_setup( app_name, args['HEROKU_TEAM_NAME'], source_code_tgz, commit_sha )
+        app_setup = create_app_setup( app_name, args['HEROKU_TEAM_NAME'], source_code_tgz, commit_sha, config_vars )
 
         # look up the app ID, wait for it to show up
         for i in range(0, timeout):
@@ -513,18 +529,11 @@ else:
         #     else:
         #         print("App %s added buildpacks." % app['name'])
 
-        # set the config vars from review apps beta config vars
-        print ("Pulling Config Vars from pipeline "+pipeline['name'])
-        config_vars = get_review_app_config_vars_for_pipeline( pipeline['id'], 'review' )
-        if not config_vars:
-            sys.exit("Pulled no config vars from pipeline: "+pipeline['name'])
-        else:
-            print ("Found %s Config Vars to set." % len(config_vars.keys()))
-        set_config_vars = set_config_vars_for_app( app_id, config_vars )
-        if not set_config_vars:
-            sys.exit("Couldn't set config vars for app: "+app['name'])
-        else:
-            print ("App now has %s Config Vars" % len(set_config_vars.keys()))
+        # set_config_vars = set_config_vars_for_app( app_id, config_vars )
+        # if not set_config_vars:
+        #     sys.exit("Couldn't set config vars for app: "+app['name'])
+        # else:
+        #     print ("App now has %s Config Vars" % len(set_config_vars.keys()))
 
         # # set automatic deployment - need ot find out how to do this right
         # if set_auto_deploy( pipeline['id'], app['id'], branch_name=branch, enable=True ):
@@ -534,14 +543,12 @@ else:
 
 # CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
 
-print ("Setting/Correcting Conifg Vars...")
+print ("Updating Conifg Vars for Microservice References...")
 r = requests.get(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku)
 config_vars = json.loads(r.text)
 
 # make sure the app name is correct, since we rename these reviewapps
-correct_vars = {
-    'HEROKU_APP_NAME': app_name
-}
+correct_vars = {}
 vars_to_fix = {}
 # pull additional renames from the arguments
 
