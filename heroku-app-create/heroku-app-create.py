@@ -432,6 +432,28 @@ if reviewapp is not None:
 else:
     print ("Found no existing app.")
 
+    # CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
+
+    # MSVC_REF is a list of config vars referencing other microservices. The config
+    # vars are delimited by '|' and key=value pairs are separated by '%'.
+    # This code will expand the value provided into:
+    #   {MSVC_PREFIX}-{MAIN_APP}-{value}-{branch}
+    #
+    # for example:
+    #   MSVC_REF=MY_API_URL%https://<microsvc>/graphql|MY_HOST%https://<microsvc>/
+    # this will result in 2 config vars:
+    #   MY_API_URL=https://myteam-someappname.herokuapp.com/graphql
+    #   MY_HOST=https://myteam-someappname.herokuapp.com
+    set_vars = {}
+    if 'MSVC_REF' in args:
+        for pair in args['MSVC_REF'].split('|'):
+            (msvc_var, msvc_url) = pair.split('%')
+            m = re.match(r'^(.*)<(.+)>(.*)$', msvc_url)
+            msvc_name = m.group(2)
+            set_vars[msvc_var] = m.group(1) + get_app_name( service_origin, msvc_name, pr_num, microservice_prefix ) + microservice_suffix + m.group(3)
+            print ("Referencing microservice: " + msvc_var + '=' + correct_vars[msvc_var])
+    set_vars['HEROKU_APP_NAME'] = app_name
+
     if service_name == service_origin:
         # This is the originating app - deploy it like a reviewapp.
         print ("Creating reviewapp...")
@@ -442,9 +464,7 @@ else:
                 'url': source_code_tgz,
                 'version': commit_sha,
             },
-            'environment': {
-                'HEROKU_APP_NAME': app_name
-            }
+            'environment': set_vars
         }
         print(json.dumps(payload, sort_keys=True, indent=4))
         try:
@@ -487,11 +507,12 @@ else:
         # vars for development phase apps
         print ("Pulling Config Vars from pipeline "+pipeline['name'])
         config_vars = get_review_app_config_vars_for_pipeline( pipeline['id'], 'review' )
-        config_vars['HEROKU_APP_NAME'] = app_name
         if not config_vars:
             sys.exit("Pulled no config vars from pipeline: "+pipeline['name'])
         else:
             print ("Found %s Config Vars to set." % len(config_vars.keys()))
+        for k,v in set_vars.items():
+            config_vars[k] = v
 
         # an app-setup is just like a reviewapp like above. It is almost like
         # and environment setup in that it creates the app, reads app.json and
@@ -519,66 +540,10 @@ else:
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
-        # set the buildpacks, if so requested
-        # if 'BUILDPACKS' in args:
-        #     print("Adding buildpacks to app " + app['name'])
-        #     bps = add_buildpacks_to_app( app['id'], args['BUILDPACKS'].split(',') )
-        #     print(json.dumps(bps, sort_keys=True, indent=4))
-        #     if not bps:
-        #         sys.exit("Couldn't add buildpacks to app %s." % app['name'])
-        #     else:
-        #         print("App %s added buildpacks." % app['name'])
-
-        # set_config_vars = set_config_vars_for_app( app_id, config_vars )
-        # if not set_config_vars:
-        #     sys.exit("Couldn't set config vars for app: "+app['name'])
-        # else:
-        #     print ("App now has %s Config Vars" % len(set_config_vars.keys()))
-
         # # set automatic deployment - need ot find out how to do this right
         # if set_auto_deploy( pipeline['id'], app['id'], branch_name=branch, enable=True ):
         #     print ("Automatic deployment enabled.")
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
-
-# CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
-
-print ("Updating Conifg Vars for Microservice References...")
-r = requests.get(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku)
-config_vars = json.loads(r.text)
-
-# make sure the app name is correct, since we rename these reviewapps
-correct_vars = {}
-vars_to_fix = {}
-# pull additional renames from the arguments
-
-# MSVC_REF is a list of config vars referencing other microservices. The config
-# vars are delimited by '|' and key=value pairs are separated by '%'.
-# This code will expand the value provided into:
-#   {MSVC_PREFIX}-{MAIN_APP}-{value}-{branch}
-#
-# for example:
-#   MSVC_REF=MY_API_URL%https://<microsvc>/graphql|MY_HOST%https://<microsvc>/
-# this will result in 2 config vars:
-#   MY_API_URL=https://myteam-someappname.herokuapp.com/graphql
-#   MY_HOST=https://myteam-someappname.herokuapp.com
-if 'MSVC_REF' in args:
-    for pair in args['MSVC_REF'].split('|'):
-        (msvc_var, msvc_url) = pair.split('%')
-        m = re.match(r'^(.*)<(.+)>(.*)$', msvc_url)
-        msvc_name = m.group(2)
-        correct_vars[msvc_var] = m.group(1) + get_app_name( service_origin, msvc_name, pr_num, microservice_prefix ) + microservice_suffix + m.group(3)
-        print ("Referencing microservice: " + msvc_var + '=' + correct_vars[msvc_var])
-# fix config vars only where necessary
-for var_name in correct_vars.keys():
-    if var_name not in config_vars.keys() or correct_vars[var_name] != config_vars[var_name]:
-        vars_to_fix[var_name] = correct_vars[var_name]
-if vars_to_fix.keys():
-    print("Config Vars to fix: ")
-    print(json.dumps(vars_to_fix, sort_keys=True, indent=4))
-    r = requests.patch(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku, data=json.dumps(vars_to_fix))
-    config_vars = json.loads(r.text)
-else:
-    print ("No Config Vars to update.")
 
 print ("Done.")
