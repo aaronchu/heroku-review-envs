@@ -451,7 +451,7 @@ else:
             m = re.match(r'^(.*)<(.+)>(.*)$', msvc_url)
             msvc_name = m.group(2)
             set_vars[msvc_var] = m.group(1) + get_app_name( service_origin, msvc_name, pr_num, microservice_prefix ) + microservice_suffix + m.group(3)
-            print ("Referencing microservice: " + msvc_var + '=' + correct_vars[msvc_var])
+            print ("Referencing microservice: " + msvc_var + '=' + set_vars[msvc_var])
     set_vars['HEROKU_APP_NAME'] = app_name
 
     if service_name == service_origin:
