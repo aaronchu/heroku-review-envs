@@ -285,6 +285,28 @@ def get_pr_name( repo, branch_name ):
     prs = json.loads(r.text)
     return next((x for x in prs if x['head']['ref'] == branch_name), None)
 
+def create_deployment( repo, sha, message ):
+    payload = {
+        'ref': sha,
+        'task': 'deploy',
+        'description': message
+    }
+    r = requests.post(api_url_github+'/repos/'+repo+'/deployments', headers=headers_github, data=json.dumps(payload))
+    deployment = json.loads(r.text)
+    return deployment
+
+def update_deployment_status( repo, deployment_id, app_name, build_id, message ):
+    payload = {
+        'description': message,
+        'environment': 'staging',
+        'state': 'success',
+        'target_url': 'https://dashboard.heroku.com/apps/%s' % app_name,
+        'environment_url': 'https://%s.herokuapp.com/' % app_name,
+    }
+    r = requests.post(api_url_github+'/repos/'+repo+'/deployments/'+deployment_id+'/statuses', headers=headers_github, data=json.dumps(payload))
+    deployment_status = json.loads(r.text)
+    return deployment_status
+
 # Non-API-Related Functions ####################################################
 
 def get_app_name( svc_origin, svc_name, pr_num, prefix ):
@@ -414,6 +436,10 @@ reviewapp = get_app_by_name( app_name )
 source_code_tgz = get_download_url( repo, branch, gha_user_token )
 if source_code_tgz is None:
     sys.exit("Couldn't get the redirect location for source code download.")
+
+# report the start of the deployment
+deployment = create_deployment( repo, commit_sha, "Deploying %s to %s" % ( repo, app_name ) )
+deployment_id = deployment['id']
 
 app_id = None
 if reviewapp is not None:
@@ -546,5 +572,7 @@ else:
         #     print ("Automatic deployment enabled.")
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
+
+deployment_status = update_deployment_status( repo, deployment_id, app_name, 'blah', 'Deployment completed' )
 
 print ("Done.")
