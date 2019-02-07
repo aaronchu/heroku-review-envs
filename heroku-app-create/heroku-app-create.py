@@ -438,8 +438,11 @@ if source_code_tgz is None:
     sys.exit("Couldn't get the redirect location for source code download.")
 
 # report the start of the deployment
-deployment = create_deployment( repo, commit_sha, "Deploying %s to %s" % ( repo, app_name ) )
-deployment_id = deployment['id']
+try:
+    deployment = create_deployment( repo, commit_sha, "Deploying %s to %s" % ( repo, app_name ) )
+    deployment_id = deployment['id']
+except:
+    print (deployment)
 
 app_id = None
 if reviewapp is not None:
