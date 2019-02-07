@@ -387,7 +387,8 @@ try:
     pr = get_pr_name( repo_origin, branch_origin )
     pr_num = pr['number']
     print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
-except:
+except Exception as ex:
+    print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
