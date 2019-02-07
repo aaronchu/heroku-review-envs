@@ -578,7 +578,7 @@ else:
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
 
-message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">App</a> <a href="https://dashboard.heroku.com/apps/%s/logs">Logs</a> ]' % (app_name, service_name, app_name, app_name)
+message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]' % (app_name, service_name, app_name, app_name, app_name)
 comment = add_pr_comment( repo_origin, pr_num, message)
 try:
     print("Comment %s added to pr %s" % ( comment['id'], str(pr_num)))
