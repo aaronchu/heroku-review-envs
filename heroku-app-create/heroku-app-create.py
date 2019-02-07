@@ -308,6 +308,11 @@ def update_deployment_status( repo, deployment_id, app_name, build_id, message )
     deployment_status = json.loads(r.text)
     return deployment_status
 
+def get_pr_comment( repo, pr_id, sha ):
+    r = requests.get(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
+    comments = json.loads(r.text)
+    return next((x for x in comments if sha in x['body']), None)
+
 def add_pr_comment( repo, pr_id, message):
     payload = {
         'body': message
@@ -315,6 +320,15 @@ def add_pr_comment( repo, pr_id, message):
     r = requests.post(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
     comment = json.loads(r.text)
     return comment
+
+def edit_pr_comment( repo, pr_id, comment_id, message):
+    payload = {
+        'body': message
+    }
+    r = requests.patch(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments/'+str(comment_id), headers=headers_github, data=json.dumps(payload))
+    comment = json.loads(r.text)
+    return comment
+
 
 # Non-API-Related Functions ####################################################
 
@@ -578,12 +592,12 @@ else:
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
 
-message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]' % (app_name, service_name, app_name, app_name, app_name)
-comment = add_pr_comment( repo_origin, pr_num, message)
-try:
-    print("Comment %s added to pr %s" % ( comment['id'], str(pr_num)))
-except:
-    print(comment)
-    print("Failed to put comment on pr %s" % str(pr_num))
+comment = get_pr_comment( repo_origin, pr_num, commit_sha )
+message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
+if comment is None:
+    comment = add_pr_comment( repo_origin, pr_num, message)
+else:
+    comment = edit_pr_comment( repo_origin, pr_num, comment['id'], comment['body']+message)
+
 
 print ("Done.")
