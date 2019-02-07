@@ -579,5 +579,10 @@ else:
         #     sys.exit("Couldn't enable auto deploy.")
 
 comment = add_pr_comment( repo, pr_num, 'Deployed microservice <b>%s</b> Web | Heroku | Logs' % service_name)
-
+try:
+    print("Comment %s added to pr %s" % ( comment['id'], str(pr_num)))
+except:
+    print(comment)
+    print("Failed to put comment on pr %s" % str(pr_num))
+    
 print ("Done.")
