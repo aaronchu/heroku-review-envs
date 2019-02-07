@@ -303,7 +303,7 @@ def update_deployment_status( repo, deployment_id, app_name, build_id, message )
         'target_url': 'https://dashboard.heroku.com/apps/%s' % app_name,
         'environment_url': 'https://%s.herokuapp.com/' % app_name,
     }
-    r = requests.post(api_url_github+'/repos/'+repo+'/deployments/'+deployment_id+'/statuses', headers=headers_github, data=json.dumps(payload))
+    r = requests.post(api_url_github+'/repos/'+repo+'/deployments/'+str(deployment_id)+'/statuses', headers=headers_github, data=json.dumps(payload))
     deployment_status = json.loads(r.text)
     return deployment_status
 
