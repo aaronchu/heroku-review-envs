@@ -309,7 +309,7 @@ def update_deployment_status( repo, deployment_id, app_name, build_id, message )
     return deployment_status
 
 def get_pr_comment( repo, pr_id, sha ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
+    r = requests.get(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github)
     comments = json.loads(r.text)
     return next((x for x in comments if sha in x['body']), None)
 
