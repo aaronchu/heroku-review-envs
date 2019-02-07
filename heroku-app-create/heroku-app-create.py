@@ -289,6 +289,7 @@ def create_deployment( repo, sha, message ):
     payload = {
         'ref': sha,
         'task': 'deploy',
+        'auto_merge': False,
         'description': message
     }
     r = requests.post(api_url_github+'/repos/'+repo+'/deployments', headers=headers_github, data=json.dumps(payload))
