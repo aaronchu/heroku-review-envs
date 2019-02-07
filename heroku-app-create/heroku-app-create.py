@@ -438,13 +438,6 @@ source_code_tgz = get_download_url( repo, branch, gha_user_token )
 if source_code_tgz is None:
     sys.exit("Couldn't get the redirect location for source code download.")
 
-# report the start of the deployment
-try:
-    deployment = create_deployment( repo, commit_sha, "Deploying %s to %s" % ( repo, app_name ) )
-    deployment_id = deployment['id']
-except:
-    print (deployment)
-
 app_id = None
 if reviewapp is not None:
     app_id = reviewapp['id']
@@ -571,12 +564,10 @@ else:
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
-        # # set automatic deployment - need ot find out how to do this right
+        # # set automatic deployment - need to find out how to do this right
         # if set_auto_deploy( pipeline['id'], app['id'], branch_name=branch, enable=True ):
         #     print ("Automatic deployment enabled.")
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
-
-deployment_status = update_deployment_status( repo, deployment_id, app_name, 'blah', 'Deployment completed' )
 
 print ("Done.")
