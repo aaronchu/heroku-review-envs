@@ -308,6 +308,14 @@ def update_deployment_status( repo, deployment_id, app_name, build_id, message )
     deployment_status = json.loads(r.text)
     return deployment_status
 
+def add_pr_comment( repo, pr_id, message):
+    payload = {
+        'body': message
+    }
+    r = requests.post(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
+    comment = json.loads(r.text)
+    return comment
+
 # Non-API-Related Functions ####################################################
 
 def get_app_name( svc_origin, svc_name, pr_num, prefix ):
@@ -569,5 +577,7 @@ else:
         #     print ("Automatic deployment enabled.")
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
+
+comment = add_pr_comment( repo, pr_num, 'Deployed microservice <b>%s</b> Web | Heroku | Logs' % service_name)
 
 print ("Done.")
