@@ -597,8 +597,10 @@ comment = get_pr_comment( repo_origin, pr_num, origin_commit_sha )
 message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
 if comment is None:
     comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
+    print(comment)
 else:
     comment = edit_pr_comment( repo_origin, pr_num, comment['id'], comment['body']+message)
+    print(comment)
 
 
 print ("Done.")
