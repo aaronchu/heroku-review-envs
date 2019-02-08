@@ -31,15 +31,8 @@ headers_heroku_review_pipelines = {
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
-headers_heroku_github = {
-    'Accept': 'application/vnd.heroku+json; version=3',
-    'Authorization': 'Bearer %s' % heroku_token,
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
-    'Content-Type': 'application/json'
-    }
 
 api_url_heroku = 'https://api.heroku.com'
-api_url_heroku_github = 'https://kolkrabbi.heroku.com'
 
 def get_review_app_by_branch( pipeline_id, branch_name ):
     r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
@@ -217,49 +210,6 @@ def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
     config_vars = json.loads(r.text)
     return config_vars
 
-def set_auto_deploy( pipeline_id, app_id, branch_name=None, enable=True ):
-    # this uses an unpublished heroku API - this is provided probably by the
-    # Heroku GitHub integration
-    r = requests.get(api_url_heroku_github+'/pipelines/'+pipeline_id+'/github', headers=headers_heroku_github)
-    pipeline_apps = json.loads(r.text)
-    app = next((x for x in pipeline_apps if x['app']['id'] == app_id), None)
-    github_owner_id = app['owner']['github']['user_id']
-    github_repo_id = app['repo_id']
-    github_repo_name = app['repo']
-    auto_deploy_state = app['auto_deploy']
-    payload = {
-        'auto_deploy': True,
-        'branch': branch_name,
-        'pull_requests': {
-            'enabled': False,
-            'auto_deploy': False,
-            'space_id': None,
-            'auto_destroy': False
-        },
-        'repo': github_repo_name,
-        'repo_id': github_repo_id,
-        'stale_days': 5,
-        'wait_for_ci': False,
-        'app': app_id,
-        'githubOwner': github_owner_id,
-        'parentApp': None
-        }
-    if enable is True:
-        if auto_deploy_state is True:
-            return True
-        payload['auto_deploy'] = True
-        r = requests.patch(api_url_heroku_github+'/apps/'+app_id+'/github', headers=headers_heroku_github, data=json.dumps(payload))
-        app = json.loads(r.text)
-        print(json.dumps(app, sort_keys=True, indent=4))
-        return app['auto_deploy']
-    else:
-        if auto_deploy_state is False:
-            return False
-        payload['auto_deploy'] = False
-        r = requests.patch(api_url_heroku_github+'/apps/'+app_id+'/github', headers=headers_heroku_github, data=json.dumps(payload))
-        app = json.loads(r.text)
-        print(json.dumps(app, sort_keys=True, indent=4))
-        return not app['auto_deploy']
 
 # GitHub Related Functions #####################################################
 
@@ -586,12 +536,6 @@ else:
         print ("Attaching to pipeline...")
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
-
-        # # set automatic deployment - need to find out how to do this right
-        # if set_auto_deploy( pipeline['id'], app['id'], branch_name=branch, enable=True ):
-        #     print ("Automatic deployment enabled.")
-        # else:
-        #     sys.exit("Couldn't enable auto deploy.")
 
 comment = get_pr_comment( repo_origin, pr_num, origin_commit_sha )
 message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
