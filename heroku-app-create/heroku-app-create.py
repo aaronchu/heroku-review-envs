@@ -402,6 +402,7 @@ print ("Pipeline Name: "+pipeline_name)
 # pull branch name from the GITHUB_REF
 branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
 commit_sha = os.environ['GITHUB_SHA']
+origin_commit_sha = commit_sha
 
 # set the app name prefix properly
 microservice_prefix = args['MSVC_PREFIX']
@@ -592,10 +593,10 @@ else:
         # else:
         #     sys.exit("Couldn't enable auto deploy.")
 
-comment = get_pr_comment( repo_origin, pr_num, commit_sha )
+comment = get_pr_comment( repo_origin, pr_num, origin_commit_sha )
 message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
 if comment is None:
-    comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+commit_sha+'<br>'+message)
+    comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
 else:
     comment = edit_pr_comment( repo_origin, pr_num, comment['id'], comment['body']+message)
 
