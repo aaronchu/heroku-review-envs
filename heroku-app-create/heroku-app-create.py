@@ -325,7 +325,7 @@ def edit_pr_comment( repo, pr_id, comment_id, message):
     payload = {
         'body': message
     }
-    r = requests.patch(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments/'+str(comment_id), headers=headers_github, data=json.dumps(payload))
+    r = requests.patch(api_url_github+'/repos/'+repo+'/issues/comments/'+str(comment_id), headers=headers_github, data=json.dumps(payload))
     comment = json.loads(r.text)
     return comment
 
