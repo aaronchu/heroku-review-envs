@@ -10,6 +10,7 @@ import time
 # some constants
 timeout = 20
 microservice_suffix = '.herokuapp.com'
+label_name = 'review-env'
 
 # tokens
 github_token = os.environ['GITHUB_TOKEN']
@@ -387,12 +388,15 @@ print ("Branch to deploy: "+branch)
 try:
     pr = get_pr_name( repo_origin, branch_origin )
     pr_num = pr['number']
-    labels = get_pr_labels( repo_origin, pr_num )
-    print (labels)
     print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 except Exception as ex:
     print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+
+labels = get_pr_labels( repo_origin, pr_num )
+print ("Detected Labels: " + labels.join(', '))
+if label_name not in labels:
+    sys.exit("To spin up a review environment, label your pr with "+label_name)
 
 # determine the app_name
 app_name = get_app_name( service_origin, service_name, pr_num, microservice_prefix )
