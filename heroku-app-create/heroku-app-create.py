@@ -230,6 +230,11 @@ def get_latest_commit_for_branch( repo, branch_name ):
     except:
         return None
 
+def get_pr_labels( repo, pr_num ):
+    r = requests.get(api_url_github+'/repos/'+repo+'/pulls/'+str(pr_num), headers=headers_github)
+    pr = json.loads(r.text)
+    return (x['name'] for x in pr['labels'])
+
 def get_pr_name( repo, branch_name ):
     r = requests.get(api_url_github+'/repos/'+repo+'/pulls', headers=headers_github)
     prs = json.loads(r.text)
@@ -382,6 +387,8 @@ print ("Branch to deploy: "+branch)
 try:
     pr = get_pr_name( repo_origin, branch_origin )
     pr_num = pr['number']
+    labels = get_pr_labels( repo_origin, pr_num )
+    print (labels)
     print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 except Exception as ex:
     print(ex)
