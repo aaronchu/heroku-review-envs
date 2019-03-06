@@ -394,7 +394,7 @@ except Exception as ex:
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 labels = get_pr_labels( repo_origin, pr_num )
-print ("Detected Labels: " + labels.join(', '))
+print ("Detected Labels: " + ', '.join(labels))
 if label_name not in labels:
     sys.exit("To spin up a review environment, label your pr with "+label_name)
 
