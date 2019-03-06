@@ -62,6 +62,13 @@ def get_app_setup_by_id( app_setup_id ):
     app_setup = json.loads(r.text)
     return app_setup
 
+def delete_app_by_name( app_name ):
+    if '-pr-' not in app_name:
+        sys.exit("Tried to delete app "+app_name+" - refusing for safety's sake.")
+    r = requests.delete(api_url_heroku+'/apps/'+app_name, headers=headers_heroku)
+    response = json.loads(r.text)
+    return response
+
 def get_app_by_name( app_name ):
     r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
     apps = json.loads(r.text)
@@ -393,13 +400,6 @@ except Exception as ex:
     print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
-# don't do anything if not a review env
-labels = get_pr_labels( repo_origin, pr_num )
-print ("Detected Labels: " + ', '.join(labels))
-if label_name not in labels:
-    print("To spin up a review environment, label your pr with "+label_name)
-    sys.exit(0)
-
 # determine the app_name
 app_name = get_app_name( service_origin, service_name, pr_num, microservice_prefix )
 
@@ -411,6 +411,19 @@ try:
     print ("Found pipeline: " + pipeline['name'] + ' - id: ' + pipeline['id'])
 except:
     sys.exit("Couldn't find the pipeline named " + pipeline_name)
+
+# if this is not a labelled PR
+labels = get_pr_labels( repo_origin, pr_num )
+print ("Detected Labels: " + ', '.join(labels))
+if label_name not in labels:
+    if get_app_by_name( app_name ):
+        # if app is already spun up, shut it down
+        print("Spinning down app "+app_name)
+        delete_app_by_name( app_name )
+    else:
+        # If nothing is spun up so far
+        print("To spin up a review environment, label your pr with "+label_name)
+    sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
 
