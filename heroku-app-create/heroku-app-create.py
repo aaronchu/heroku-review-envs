@@ -393,10 +393,12 @@ except Exception as ex:
     print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
+# don't do anything if not a review env
 labels = get_pr_labels( repo_origin, pr_num )
 print ("Detected Labels: " + ', '.join(labels))
 if label_name not in labels:
-    sys.exit("To spin up a review environment, label your pr with "+label_name)
+    print("To spin up a review environment, label your pr with "+label_name)
+    sys.exit(0)
 
 # determine the app_name
 app_name = get_app_name( service_origin, service_name, pr_num, microservice_prefix )
