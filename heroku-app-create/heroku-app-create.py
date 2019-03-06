@@ -233,7 +233,7 @@ def get_latest_commit_for_branch( repo, branch_name ):
 def get_pr_labels( repo, pr_num ):
     r = requests.get(api_url_github+'/repos/'+repo+'/pulls/'+str(pr_num), headers=headers_github)
     pr = json.loads(r.text)
-    return (x['name'] for x in pr['labels'])
+    return [x['name'] for x in pr['labels']]
 
 def get_pr_name( repo, branch_name ):
     r = requests.get(api_url_github+'/repos/'+repo+'/pulls', headers=headers_github)
