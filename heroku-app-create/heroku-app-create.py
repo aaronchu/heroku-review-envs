@@ -9,7 +9,7 @@ import time
 
 # some constants
 timeout = 20
-microservice_suffix = '.herokuapp.com'
+app_domain_suffix = '.herokuapp.com'
 label_name = 'review-env'
 
 # tokens
@@ -260,10 +260,10 @@ def add_pr_comment( repo, pr_id, message):
 
 def get_app_name( svc_origin, svc_name, pr_num, prefix ):
     if svc_origin != svc_name:
-        # if related microservice, we append the service name
+        # if related app, we append the app name
         name = "%s-%s-pr-%s-%s" % ( prefix, svc_origin, pr_num, svc_name )
     else:
-        # if this is the originatine app, juset name it like vanilla review apps
+        # if this is the originating app, just name it like vanilla review apps
         name = "%s-%s-pr-%s" % ( prefix, svc_origin, pr_num )
     # truncate to 30 chars for Heroku
     return name[:30]
@@ -297,8 +297,8 @@ args_or_envs = [
     'HEROKU_PIPELINE_NAME',
     'REPO',
     'REPO_ORIGIN',
-    'MSVC_REF',
-    'MSVC_PREFIX',
+    'APP_REF',
+    'APP_PREFIX',
     'SERVICE_NAME',
     'SERVICE_ORIGIN'
 ]
@@ -331,18 +331,18 @@ commit_sha = os.environ['GITHUB_SHA']
 origin_commit_sha = commit_sha
 
 # set the app name prefix properly
-microservice_prefix = args['MSVC_PREFIX']
+app_prefix = args['APP_PREFIX']
 
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
-# are we deploying the originating service, or a related microservice?
+# are we deploying the originating app, or a related app?
 if service_origin == service_name:
-    # originating service
+    # originating app
     repo = repo_origin
     branch = branch_origin
 else:
-    # related microservice
+    # related app
     repo = args['REPO']
     branch = args['BRANCH']
     commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
@@ -366,7 +366,7 @@ except Exception as ex:
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
-app_name = get_app_name( service_origin, service_name, pr_num, microservice_prefix )
+app_name = get_app_name( service_origin, service_name, pr_num, app_prefix )
 
 print ("App Name: "+app_name)
 
@@ -421,24 +421,24 @@ else:
 
     # CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
 
-    # MSVC_REF is a list of config vars referencing other microservices. The config
+    # APP_REF is a list of config vars referencing other apps. The config
     # vars are delimited by '|' and key=value pairs are separated by '%'.
     # This code will expand the value provided into:
-    #   {MSVC_PREFIX}-{MAIN_APP}-{value}-{branch}
+    #   {APP_PREFIX}-{MAIN_APP}-{value}-{branch}
     #
     # for example:
-    #   MSVC_REF=MY_API_URL%https://<microsvc>/graphql|MY_HOST%https://<microsvc>/
+    #   APP_REF=MY_API_URL%https://<microsvc>/graphql|MY_HOST%https://<microsvc>/
     # this will result in 2 config vars:
     #   MY_API_URL=https://myteam-someappname.herokuapp.com/graphql
     #   MY_HOST=https://myteam-someappname.herokuapp.com
     set_vars = {}
-    if 'MSVC_REF' in args:
-        for pair in args['MSVC_REF'].split('|'):
-            (msvc_var, msvc_url) = pair.split('%')
-            m = re.match(r'^(.*)<(.+)>(.*)$', msvc_url)
-            msvc_name = m.group(2)
-            set_vars[msvc_var] = m.group(1) + get_app_name( service_origin, msvc_name, pr_num, microservice_prefix ) + microservice_suffix + m.group(3)
-            print ("Referencing microservice: " + msvc_var + '=' + set_vars[msvc_var])
+    if 'APP_REF' in args:
+        for pair in args['APP_REF'].split('|'):
+            (app_var, app_url) = pair.split('%')
+            m = re.match(r'^(.*)<(.+)>(.*)$', app_url)
+            name = m.group(2)
+            set_vars[app_var] = m.group(1) + get_app_name( service_origin, name, pr_num, app_prefix ) + app_domain_suffix + m.group(3)
+            print ("Referencing app: " + app_var + '=' + set_vars[app_var])
     set_vars['HEROKU_APP_NAME'] = app_name
 
     if service_name == service_origin:
@@ -486,7 +486,7 @@ else:
             sys.exit("Failed to rename the app!")
 
     else:
-        # this is a related microservice, deploy it as a development app
+        # this is a related app, deploy it as a into the development pipeline phase
         print ("Creating development phase app...")
 
         # get the config vars from review apps beta config vars in the pipeline
@@ -528,7 +528,7 @@ else:
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
 if service_origin == service_name:
-    message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
+    message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
     comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
     print(comment['body'])
 

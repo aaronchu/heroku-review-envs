@@ -24,12 +24,12 @@ action "create-myapp" {
     "GHA_USER_TOKEN"
     ]
   args = [
-    "MSVC_PREFIX=myorg",
+    "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
     "SERVICE_NAME=myapp",
     "HEROKU_PIPELINE_NAME=myorg-myapp",
     "REPO=myorg/myapp",
-    "MSVC_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"]
+    "APP_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"]
 }
 ```
 
@@ -43,7 +43,7 @@ action "create-mymicrosvc" {
     "GITHUB_TOKEN",
     "GHA_USER_TOKEN"]
   args = [
-    "MSVC_PREFIX=myorg",
+    "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
     "SERVICE_NAME=mymicrosvc",
     "SERVICE_ORIGIN=myapp",
@@ -66,7 +66,7 @@ action "create-mymicrosvc" {
 
 In order to supply arguments to this action, use a format similar to environment variable definitions - as shown above in the examples.
 
-* `MSVC_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
+* `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
 * `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
 * `SERVICE_NAME` - **Required.** The name of this service being deployed.
 * `SERVICE_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
@@ -74,17 +74,17 @@ In order to supply arguments to this action, use a format similar to environment
 * `REPO` - **Required.** The GitHub Repo that you're deploying this service from. Must be in `user`/`repo_name` or `org`/`repo_name` format.
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
 * `BRANCH` - **Required.** The branch of the app that you need deployed.
-* `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
+* `APP_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
 
 ## Referencing Apps
 
-Here's an example of how to set `MSVC_REF` in order to reference one app from another:
+Here's an example of how to set `APP_REF` in order to reference one app from another:
 ```
-"MSVC_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"
+"APP_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"
 ```
 We are defining templates by which to generate the environment variables that point to another app.
 
-In the value of the `MSVC_REF` variable, we define multiple `config_vars` to be created. They are delimited by the `|` character. Each of those is a pair - a name and a string template separated by the `%` character.
+In the value of the `APP_REF` variable, we define multiple `config_vars` to be created. They are delimited by the `|` character. Each of those is a pair - a name and a string template separated by the `%` character.
 
 The string template should contain a placeholder for the Heroku Domain to be assigned to the app. This should be in the form `<myapp>` where `myapp` is the value of `SERVICE_NAME`.
 
@@ -118,7 +118,7 @@ myorg-devapp-pr-number-relatedapp
 
 ## Config Vars
 
-Config vars are pulled from the Review Apps Beta pipelines. Configure these before launching the apps. Both the Development App and Related Apps pull their Config Vars from there before any updates from `MSVC_REF`.
+Config vars are pulled from the Review Apps Beta pipelines. Configure these before launching the apps. Both the Development App and Related Apps pull their Config Vars from there before any updates from `APP_REF`.
 
 ## Known Issues
 
