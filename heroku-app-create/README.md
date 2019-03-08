@@ -3,11 +3,11 @@
 This GitHub action creates and/or deploys to a Heroku App based on changes in a
 repository.
 
-This is suited to use when you are developing changes to one microservice in a microservices environment.
+This is suited to use when you are developing changes to one app in a multi-app environment.
 
 ## Terminology
 
-You're workiÂng on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other microservices either by calling them or being called by them. Those other microservices are called `Related Apps or Services`.
+You're workiÂng on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps or Services`.
 
 This GitHub Action deploys both of those types of apps into your Heroku account.
 
@@ -73,22 +73,22 @@ In order to supply arguments to this action, use a format similar to environment
 * `HEROKU_PIPELINE_NAME` - **Required.** The name of the Heroku Pipeline that contains apps for this service.
 * `REPO` - **Required.** The GitHub Repo that you're deploying this service from. Must be in `user`/`repo_name` or `org`/`repo_name` format.
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
-* `BRANCH` - **Required.** The branch of the microservice that you need deployed.
-* `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another microservice. See the below section on how to use this.
+* `BRANCH` - **Required.** The branch of the app that you need deployed.
+* `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
 
-## Referencing Microservices
+## Referencing Apps
 
-Here's an example of how to set `MSVC_REF` in order to reference one microservice from another:
+Here's an example of how to set `MSVC_REF` in order to reference one app from another:
 ```
 "MSVC_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"
 ```
-We are defining templates by which to generate the environment variables that point to another microservice.
+We are defining templates by which to generate the environment variables that point to another app.
 
 In the value of the `MSVC_REF` variable, we define multiple `config_vars` to be created. They are delimited by the `|` character. Each of those is a pair - a name and a string template separated by the `%` character.
 
 The string template should contain a placeholder for the Heroku Domain to be assigned to the app. This should be in the form `<myapp>` where `myapp` is the value of `SERVICE_NAME`.
 
-The definition of a microservice reference like this:
+The definition of an app reference like this:
 
 ```
 API_URL%https://<myapp>/graphql
