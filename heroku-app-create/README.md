@@ -7,7 +7,7 @@ This is suited to use when you are developing changes to one microservice in a m
 
 ## Terminology
 
-You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other microservices either by calling them or being called by them. Those other microservices are called `Related Apps or Services`.
+You're workiÂng on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other microservices either by calling them or being called by them. Those other microservices are called `Related Apps or Services`.
 
 This GitHub Action deploys both of those types of apps into your Heroku account.
 
@@ -75,7 +75,6 @@ In order to supply arguments to this action, use a format similar to environment
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
 * `BRANCH` - **Required.** The branch of the microservice that you need deployed.
 * `MSVC_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another microservice. See the below section on how to use this.
-* `BUILDPACKS` - **Optional.** This will work for **Related Apps only.** This is a comma-separated list of buildpack URLs. This is necessary for the development phase apps which do not pick up their buildpacks properly from `app.json`. **This may not be needed any longer as we've started to use the `/app-setups` endpoint for spinning things up and it seems to read `app.json` just fine.**
 
 ## Referencing Microservices
 
@@ -122,10 +121,6 @@ myorg-devapp-pr-number-relatedapp
 Config vars are pulled from the Review Apps Beta pipelines. Configure these before launching the apps. Both the Development App and Related Apps pull their Config Vars from there before any updates from `MSVC_REF`.
 
 ## Known Issues
-
-### Detection of Buildpacks for Elixir Apps
-
-You must specify the buildpacks in the configuration of another app in the pipeline (we did this in a `staging` phase app), in order for the buildpacks to be picked up - even if they're specified in the `app.json` file.
 
 ### Auto-deployment of updates to Related Apps
 
