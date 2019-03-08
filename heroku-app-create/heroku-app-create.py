@@ -244,7 +244,7 @@ def get_pr_labels( repo, pr_num ):
     return [x['name'] for x in pr['labels']]
 
 def get_pr_name( repo, branch_name ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/pulls', headers=headers_github)
+    r = requests.get(api_url_github+'/repos/'+repo+'/pulls?per_page=100', headers=headers_github)
     prs = json.loads(r.text)
     return next((x for x in prs if x['head']['ref'] == branch_name), None)
 
