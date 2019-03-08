@@ -1,13 +1,12 @@
 # heroku-app-create
 
-This GitHub action creates and/or deploys to a Heroku App based on changes in a
-repository.
+This GitHub action creates and/or deploys to a Heroku App based on changes in a repository.
 
 This is suited to use when you are developing changes to one app in a multi-app environment.
 
 ## Terminology
 
-You're workiÂng on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps or Services`.
+You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps or Services`.
 
 This GitHub Action deploys both of those types of apps into your Heroku account.
 
