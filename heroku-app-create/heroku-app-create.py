@@ -248,47 +248,11 @@ def get_pr_name( repo, branch_name ):
     prs = json.loads(r.text)
     return next((x for x in prs if x['head']['ref'] == branch_name), None)
 
-def create_deployment( repo, sha, message ):
-    payload = {
-        'ref': sha,
-        'task': 'deploy',
-        'auto_merge': False,
-        'description': message
-    }
-    r = requests.post(api_url_github+'/repos/'+repo+'/deployments', headers=headers_github, data=json.dumps(payload))
-    deployment = json.loads(r.text)
-    return deployment
-
-def update_deployment_status( repo, deployment_id, app_name, build_id, message ):
-    payload = {
-        'description': message,
-        'environment': 'staging',
-        'state': 'success',
-        'target_url': 'https://dashboard.heroku.com/apps/%s' % app_name,
-        'environment_url': 'https://%s.herokuapp.com/' % app_name,
-    }
-    r = requests.post(api_url_github+'/repos/'+repo+'/deployments/'+str(deployment_id)+'/statuses', headers=headers_github, data=json.dumps(payload))
-    deployment_status = json.loads(r.text)
-    return deployment_status
-
-def get_pr_comment( repo, pr_id, sha ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github)
-    comments = json.loads(r.text)
-    return next((x for x in comments if sha in x['body']), None)
-
 def add_pr_comment( repo, pr_id, message):
     payload = {
         'body': message
     }
     r = requests.post(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
-    comment = json.loads(r.text)
-    return comment
-
-def edit_pr_comment( repo, pr_id, comment_id, message):
-    payload = {
-        'body': message
-    }
-    r = requests.patch(api_url_github+'/repos/'+repo+'/issues/comments/'+str(comment_id), headers=headers_github, data=json.dumps(payload))
     comment = json.loads(r.text)
     return comment
 
@@ -563,12 +527,8 @@ else:
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
-comment = get_pr_comment( repo_origin, pr_num, origin_commit_sha )
 message = 'Deployed microservice <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
-if comment is None:
-    comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
-else:
-    comment = edit_pr_comment( repo_origin, pr_num, comment['id'], comment['body']+message)
+comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
 print(comment['body'])
 
 print ("Done.")
