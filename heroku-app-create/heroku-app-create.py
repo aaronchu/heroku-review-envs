@@ -359,6 +359,8 @@ print ("Branch to deploy: "+branch)
 try:
     pr = get_pr_name( repo_origin, branch_origin )
     pr_num = pr['number']
+    pr_labels = [x['name'] for x in pr['labels']]
+    pr_status = pr['state']
     print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 except Exception as ex:
     print(ex)
@@ -377,16 +379,15 @@ except:
     sys.exit("Couldn't find the pipeline named " + pipeline_name)
 
 # if this is not a labelled PR
-labels = get_pr_labels( repo_origin, pr_num )
-print ("Detected Labels: " + ', '.join(labels))
-if label_name not in labels:
+print ("Detected Labels: " + ', '.join(pr_labels))
+if label_name not in pr_labels or pr_status == 'closed':
     if get_app_by_name( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
     else:
         # If nothing is spun up so far
-        print("To spin up a review environment, label your pr with "+label_name)
+        print("To spin up a review environment, label your open pr with "+label_name)
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
