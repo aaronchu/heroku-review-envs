@@ -1,7 +1,7 @@
 FROM debian:9.5-slim
 
 LABEL "com.github.actions.name"="Heroku Create Review Environment App"
-LABEL "com.github.actions.description"="Create a Review App for Microservices Environment"
+LABEL "com.github.actions.description"="Creates a Review App for a Review Environment"
 LABEL "com.github.actions.icon"="mic"
 LABEL "com.github.actions.color"="blue"
 

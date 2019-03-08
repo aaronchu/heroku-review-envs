@@ -36,7 +36,7 @@ action "create-myapp" {
 Example usage when deploying a Related App:
 
 ```
-action "create-mymicrosvc" {
+action "create-myrelatedapp" {
   uses = "TheRealReal/heroku-review-envs/heroku-app-create"
   secrets = [
     "HEROKU_API_TOKEN",
@@ -45,11 +45,11 @@ action "create-mymicrosvc" {
   args = [
     "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
-    "SERVICE_NAME=mymicrosvc",
+    "SERVICE_NAME=myrelatedapp",
     "SERVICE_ORIGIN=myapp",
-    "HEROKU_PIPELINE_NAME=myorg-myapp",
+    "HEROKU_PIPELINE_NAME=myorg-myrelatedapp",
     "REPO_ORIGIN=myorg/myapp",
-    "REPO=myorg/mymicrosvc",
+    "REPO=myorg/myrelatedapp",
     "BRANCH=master"]
 }
 ```

@@ -427,7 +427,7 @@ else:
     #   {APP_PREFIX}-{MAIN_APP}-{value}-{branch}
     #
     # for example:
-    #   APP_REF=MY_API_URL%https://<microsvc>/graphql|MY_HOST%https://<microsvc>/
+    #   APP_REF=MY_API_URL%https://<app_name>/graphql|MY_HOST%https://<app_name>/
     # this will result in 2 config vars:
     #   MY_API_URL=https://myteam-someappname.herokuapp.com/graphql
     #   MY_HOST=https://myteam-someappname.herokuapp.com
