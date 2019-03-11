@@ -527,9 +527,6 @@ else:
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
-if app_origin == app_short_name:
-    message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
-    comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
-    print(comment['body'])
-
+message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
+print (message)
 print ("Done.")
