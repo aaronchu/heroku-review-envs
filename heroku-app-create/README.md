@@ -6,7 +6,7 @@ This is suited to use when you are developing changes to one app in a multi-app 
 
 ## Terminology
 
-You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App or Service`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps or Services`.
+You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps`.
 
 This GitHub Action deploys both of those types of apps into your Heroku account.
 
@@ -25,7 +25,7 @@ action "create-myapp" {
   args = [
     "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
-    "SERVICE_NAME=myapp",
+    "APP_NAME=myapp",
     "HEROKU_PIPELINE_NAME=myorg-myapp",
     "REPO=myorg/myapp",
     "APP_REF=API_URL%https://<myapp>/graphql|API_HOST%https://<myapp>/"]
@@ -44,8 +44,8 @@ action "create-myrelatedapp" {
   args = [
     "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
-    "SERVICE_NAME=myrelatedapp",
-    "SERVICE_ORIGIN=myapp",
+    "APP_NAME=myrelatedapp",
+    "APP_ORIGIN=myapp",
     "HEROKU_PIPELINE_NAME=myorg-myrelatedapp",
     "REPO_ORIGIN=myorg/myapp",
     "REPO=myorg/myrelatedapp",
@@ -67,10 +67,10 @@ In order to supply arguments to this action, use a format similar to environment
 
 * `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
 * `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
-* `SERVICE_NAME` - **Required.** The name of this service being deployed.
-* `SERVICE_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
-* `HEROKU_PIPELINE_NAME` - **Required.** The name of the Heroku Pipeline that contains apps for this service.
-* `REPO` - **Required.** The GitHub Repo that you're deploying this service from. Must be in `user`/`repo_name` or `org`/`repo_name` format.
+* `APP_NAME` - **Required.** The name of this App being deployed.
+* `APP_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
+* `HEROKU_PIPELINE_NAME` - **Required.** The name of the Heroku Pipeline that contains apps for this App.
+* `REPO` - **Required.** The GitHub Repo that you're deploying this App from. Must be in `user`/`repo_name` or `org`/`repo_name` format.
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
 * `BRANCH` - **Required.** The branch of the app that you need deployed.
 * `APP_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
@@ -85,7 +85,7 @@ We are defining templates by which to generate the environment variables that po
 
 In the value of the `APP_REF` variable, we define multiple `config_vars` to be created. They are delimited by the `|` character. Each of those is a pair - a name and a string template separated by the `%` character.
 
-The string template should contain a placeholder for the Heroku Domain to be assigned to the app. This should be in the form `<myapp>` where `myapp` is the value of `SERVICE_NAME`.
+The string template should contain a placeholder for the Heroku Domain to be assigned to the app. This should be in the form `<myapp>` where `myapp` is the value of `APP_NAME`.
 
 The definition of an app reference like this:
 
@@ -93,7 +93,7 @@ The definition of an app reference like this:
 API_URL%https://<myapp>/graphql
 ```
 
-Results in a `config_var` named `API_URL` - and if `myapp` is the `SERVICE_NAME` then the value could be something like this:
+Results in a `config_var` named `API_URL` - and if `myapp` is the `APP_NAME` then the value could be something like this:
 
 ```
 https://myorg-myapp-branch.herokuapp.com/graphql

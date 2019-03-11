@@ -299,8 +299,8 @@ args_or_envs = [
     'REPO_ORIGIN',
     'APP_REF',
     'APP_PREFIX',
-    'SERVICE_NAME',
-    'SERVICE_ORIGIN'
+    'APP_NAME',
+    'APP_ORIGIN'
 ]
 for i in args_or_envs:
     if i not in args and i in os.environ:
@@ -310,16 +310,16 @@ print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not 
 
 # GET THE INPUTS SET UP RIGHT ##################################################
 
-# determine the service_name - short name that references the type of service
-service_name = args['SERVICE_NAME']
-print ("Service Name: "+service_name)
+# determine the app_short_name - short name that references the type of service
+app_short_name = args['APP_NAME']
+print ("Service Name: "+app_short_name)
 
-# if this SERVICE_ORIGIN is not specified, then we are deploying the originating
+# if this APP_ORIGIN is not specified, then we are deploying the originating
 # service. Fill in the value of this var just for ease of use.
-service_origin = service_name
-if 'SERVICE_ORIGIN' in args:
-    service_origin = args['SERVICE_ORIGIN']
-print("Originating Service: "+service_origin)
+app_origin = app_short_name
+if 'APP_ORIGIN' in args:
+    app_origin = args['APP_ORIGIN']
+print("Originating Service: "+app_origin)
 
 # pipeline name that we deploy into
 pipeline_name = args['HEROKU_PIPELINE_NAME']
@@ -337,7 +337,7 @@ app_prefix = args['APP_PREFIX']
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
 # are we deploying the originating app, or a related app?
-if service_origin == service_name:
+if app_origin == app_short_name:
     # originating app
     repo = repo_origin
     branch = branch_origin
@@ -366,7 +366,7 @@ except Exception as ex:
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
-app_name = get_app_name( service_origin, service_name, pr_num, app_prefix )
+app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
 
 print ("App Name: "+app_name)
 
@@ -437,11 +437,11 @@ else:
             (app_var, app_url) = pair.split('%')
             m = re.match(r'^(.*)<(.+)>(.*)$', app_url)
             name = m.group(2)
-            set_vars[app_var] = m.group(1) + get_app_name( service_origin, name, pr_num, app_prefix ) + app_domain_suffix + m.group(3)
+            set_vars[app_var] = m.group(1) + get_app_name( app_origin, name, pr_num, app_prefix ) + app_domain_suffix + m.group(3)
             print ("Referencing app: " + app_var + '=' + set_vars[app_var])
     set_vars['HEROKU_APP_NAME'] = app_name
 
-    if service_name == service_origin:
+    if app_short_name == app_origin:
         # This is the originating app - deploy it like a reviewapp.
         print ("Creating reviewapp...")
         payload = {
@@ -527,8 +527,8 @@ else:
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
-if service_origin == service_name:
-    message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, service_name, app_name, app_name, app_name)
+if app_origin == app_short_name:
+    message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
     comment = add_pr_comment( repo_origin, pr_num, 'Review Environment for commit sha: '+origin_commit_sha+'<br>'+message)
     print(comment['body'])
 
