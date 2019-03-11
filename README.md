@@ -4,7 +4,7 @@ Review Environments built on the Heroku platform, using their Review Apps functi
 
 ## Purpose
 
-If you need to support testing and development of microservices environments, and you're using the Review Apps Beta functionality on the Heroku platform, this is a (set of) GitHub Actions that will help you run those microservices.
+If you need to support testing and development of multi-app environments, and you're using the Review Apps Beta functionality on the Heroku platform, this is a (set of) GitHub Actions that will help you run those apps together.
 
 ## Why ReviewApps Beta?
 
