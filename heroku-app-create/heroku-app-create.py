@@ -550,6 +550,7 @@ else:
 
     # grant access to all users
     users = get_team_members( app_prefix )
+    print(json.dumps(users, sort_keys=True, indent=4))
     for email in [ x['email'] for x in users ]:
         grant_review_app_access_to_user( app_name, email )
 
