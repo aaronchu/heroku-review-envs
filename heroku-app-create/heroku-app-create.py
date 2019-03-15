@@ -422,20 +422,11 @@ app_id = None
 if reviewapp is not None:
     app_id = reviewapp['id']
     print ("Found reviewapp id: " + app_id )
-
-    # we are only deploying to the originating app - related apps should stay
-    if app_origin == app_short_name:
-        # Deploy to the reviewapp as it already exists.
-        print ("Deploying...")
-        try:
-            response = deploy_to_app( app_id, source_code_tgz, commit_sha )
-            print ("Created Build:")
-            print(json.dumps(response, sort_keys=True, indent=4))
-            print ("Status is currently " + response['status'])
-        except:
-            sys.exit("Couldn't deploy to app id " + reviewapp['id'])
-    else:
-        print("Already exists - no action necessary.")
+    # Originating App - doesn't need to be deployed because Review Apps Beta
+    #   automatically deploys on push to the PR.
+    # Related App - we do not deploy here b/c we don't want to disrupt the state
+    #   of the related app as that may affect testing.
+    print("Already exists - no action necessary.")
 
 else:
     print ("Found no existing app.")
@@ -550,7 +541,6 @@ else:
 
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
-#    print(json.dumps(users, sort_keys=True, indent=4))
     for email in [ x['email'] for x in users ]:
         grant_review_app_access_to_user( app_name, email )
 
