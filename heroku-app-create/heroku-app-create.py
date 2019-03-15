@@ -549,8 +549,8 @@ else:
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
 
     # grant access to all users
-    users = get_team_members( app_prefix )
-    print(json.dumps(users, sort_keys=True, indent=4))
+    users = get_team_members( args['HEROKU_TEAM_NAME'] )
+#    print(json.dumps(users, sort_keys=True, indent=4))
     for email in [ x['email'] for x in users ]:
         grant_review_app_access_to_user( app_name, email )
 
