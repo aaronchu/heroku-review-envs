@@ -218,6 +218,19 @@ def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
     config_vars = json.loads(r.text)
     return config_vars
 
+def grant_review_app_access_to_user( app_name, email ):
+    payload = {
+        'user': email,
+        'permissions': ['view', 'deploy', 'operate'],
+        'silent': True
+    }
+    r = requests.post(api_url_heroku+'/teams/apps/'+app_name+'/collaborators', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
+    return json.loads(r.text)
+
+def get_team_members( team_name ):
+    r = requests.get(api_url_heroku+'/teams/'+team_name+'/members', headers=headers_heroku_review_pipelines)
+    team_members = json.loads(r.text)
+    return team_members
 
 # GitHub Related Functions #####################################################
 
@@ -394,6 +407,10 @@ if label_name not in pr_labels or pr_status == 'closed':
 # see if there's a review app for this branch already
 reviewapp = get_app_by_name( app_name )
 
+# if it wasn't found, try to use an existing review app if it already exists
+if reviewapp is None and app_origin == app_short_name:
+    reviewapp = get_review_app_by_branch( pipeline['id'], branch)
+
 # Heroku wants us to pull the 302 location for the actual code download by
 # using this URL - the token gets modified, we don't know how, so we gotta pull
 # it before submitting to Heroku.
@@ -405,16 +422,11 @@ app_id = None
 if reviewapp is not None:
     app_id = reviewapp['id']
     print ("Found reviewapp id: " + app_id )
-
-    # Deploy to the reviewapp as it already exists.
-    print ("Deploying...")
-    try:
-        response = deploy_to_app( app_id, source_code_tgz, commit_sha )
-        print ("Created Build:")
-        print(json.dumps(response, sort_keys=True, indent=4))
-        print ("Status is currently " + response['status'])
-    except:
-        sys.exit("Couldn't deploy to app id " + reviewapp['id'])
+    # Originating App - doesn't need to be deployed because Review Apps Beta
+    #   automatically deploys on push to the PR.
+    # Related App - we do not deploy here b/c we don't want to disrupt the state
+    #   of the related app as that may affect testing.
+    print("Already exists - no action necessary.")
 
 else:
     print ("Found no existing app.")
@@ -526,6 +538,11 @@ else:
         print ("Attaching to pipeline...")
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
+
+    # grant access to all users
+    users = get_team_members( args['HEROKU_TEAM_NAME'] )
+    for email in [ x['email'] for x in users ]:
+        grant_review_app_access_to_user( app_name, email )
 
 message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
 print (message)
