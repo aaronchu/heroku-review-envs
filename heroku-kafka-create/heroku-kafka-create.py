@@ -448,6 +448,7 @@ else:
     print ("Creating Kafka addon...")
     kafka_addon = create_addon( app_name, 'heroku-kafka:basic-0' )
     print(json.dumps(kafka_addon, sort_keys=True, indent=4))
+    print("blah")
 
     # attach the addon to apps
     app_short_names = args['RELATED_APPS'].split(',')
