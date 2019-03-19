@@ -1,4 +1,4 @@
-# heroku-kafka-create
+# heroku-addon-create
 
 This GitHub action creates and/or deploys to a Heroku Kafka App with a Kafka addon, and attach that addon to multiple Apps in the Review Environment.
 
@@ -22,7 +22,7 @@ action "create-kafka" {
     "create-trr-api",
     "create-trr-api-gateway"
     ]
-  uses = "TheRealReal/heroku-review-envs/heroku-kafka-create"
+  uses = "TheRealReal/heroku-review-envs/heroku-addon-create"
   secrets = [
     "HEROKU_API_TOKEN",
     "GITHUB_TOKEN"
@@ -30,15 +30,15 @@ action "create-kafka" {
   args = [
     "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
-    "APP_NAME=kafka",
-    "APP_ORIGIN=myapp",
+    "APP_NAME=myapp",
+    "ADDON_NAME=KAFKA",
     "RELATED_APPS=relatedapp,relatedapp2",
-    "HEROKU_PIPELINE_NAME=myorg-kafka",
+    "ADDON_PLAN=heroku-kafka:basic-0"
     ]
 }
 
 action "create-trr-website" {
-  uses = "TheRealReal/heroku-review-envs/heroku-app-create@create"
+  uses = "TheRealReal/heroku-review-envs/heroku-app-create"
   ...
 }
 
@@ -57,10 +57,10 @@ In order to supply arguments to this action, use a format similar to environment
 
 * `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
 * `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
-* `APP_NAME` - **Required.** The name of this App being deployed.
-* `APP_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
-* `HEROKU_PIPELINE_NAME` - **Required.** The name of the Heroku Pipeline that contains apps for this App.
+* `APP_NAME` - **Required.** The name of the Development App being deployed.
 * `RELATED_APPS` - **Required.** Other Apps in the Review Environment to attach this Kafka to.
+* `ADDON_PLAN` - **Required.** The Heroku Addon Plan to use, for example: `heroku-kafka:basic-0`.
+* `ADDON_NAME` - **Required.** The name of the attachment of this Heroku Addon. This action will not add another addon if one with this name is detected on the Originating App.
 
 ## How Heroku App Names Are Generated
 

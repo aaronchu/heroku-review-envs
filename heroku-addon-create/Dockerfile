@@ -1,7 +1,7 @@
 FROM debian:9.5-slim
 
-LABEL "com.github.actions.name"="Heroku Create Review Environment Kafka Instance"
-LABEL "com.github.actions.description"="Creates a Kafka instance for a Review Environment"
+LABEL "com.github.actions.name"="Heroku Create Review Environment Addon"
+LABEL "com.github.actions.description"="Creates a Heroku Addon for a Review Environment"
 LABEL "com.github.actions.icon"="mic"
 LABEL "com.github.actions.color"="blue"
 
@@ -20,8 +20,8 @@ RUN \
 RUN \
   pip3 install requests
 
-ADD heroku-kafka-create.py /heroku-kafka-create.py
+ADD heroku-addon-create.py /heroku-addon-create.py
 
-RUN chmod +x /heroku-kafka-create.py
+RUN chmod +x /heroku-addon-create.py
 
-ENTRYPOINT ["/heroku-kafka-create.py"]
+ENTRYPOINT ["/heroku-addon-create.py"]

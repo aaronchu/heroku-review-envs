@@ -231,22 +231,31 @@ def get_team_members( team_name ):
     team_members = json.loads(r.text)
     return team_members
 
-def create_addon( app_name, addon_plan, addon_config=None ):
+def create_addon( app_name, addon_name, addon_plan, addon_config=None ):
     payload = {
-        'plan': addon_plan
+        'plan': addon_plan,
+        'attachment': {
+            'name': addon_name
+        }
     }
     if addon_config:
         payload['config'] = addon_config
     r = requests.post(api_url_heroku+'/apps/'+app_name+'/addons', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
     return json.loads(r.text)
 
-def attach_addon( app_name, addon_id ):
+def attach_addon( app_name, addon_name, addon_id ):
     payload = {
         'addon': addon_id,
-        'app': app_name
+        'app': app_name,
+        'name': addon_name
     }
     r = requests.post(api_url_heroku+'/addon-attachments', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
     return json.loads(r.text)
+
+def get_app_addons( app_name ):
+    r = requests.get(api_url_heroku+'/apps/'+app_name+'/addon-attachments', headers=headers_heroku_review_pipelines)
+    addons = json.loads(r.text)
+    return addons
 
 # GitHub Related Functions #####################################################
 
@@ -320,16 +329,12 @@ for arg in sys.argv:
 
 # for quick testing, we want these to be alternatively passed in via environment
 args_or_envs = [
-    'BRANCH',
-    'BUILDPACKS',
     'HEROKU_TEAM_NAME',
-    'HEROKU_PIPELINE_NAME',
-    'REPO',
-    'REPO_ORIGIN',
-    'APP_REF',
     'APP_PREFIX',
     'APP_NAME',
-    'APP_ORIGIN'
+    'RELATED_APPS',
+    'ADDON_PLAN',
+    'ADDON_NAME'
 ]
 for i in args_or_envs:
     if i not in args and i in os.environ:
@@ -343,16 +348,9 @@ print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not 
 app_short_name = args['APP_NAME']
 print ("Service Name: "+app_short_name)
 
-# if this APP_ORIGIN is not specified, then we are deploying the originating
-# service. Fill in the value of this var just for ease of use.
+# APP_ORIGIN is the originating app. Fill in the value of this var just for ease of use.
 app_origin = app_short_name
-if 'APP_ORIGIN' in args:
-    app_origin = args['APP_ORIGIN']
 print("Originating Service: "+app_origin)
-
-# pipeline name that we deploy into
-pipeline_name = args['HEROKU_PIPELINE_NAME']
-print ("Pipeline Name: "+pipeline_name)
 
 # pull branch name from the GITHUB_REF
 branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
@@ -392,13 +390,6 @@ app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
 
 print ("App Name: "+app_name)
 
-# find the pipeline where we want to spawn the app
-try:
-    pipeline = get_pipeline_by_name( pipeline_name )
-    print ("Found pipeline: " + pipeline['name'] + ' - id: ' + pipeline['id'])
-except:
-    sys.exit("Couldn't find the pipeline named " + pipeline_name)
-
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
 if label_name not in pr_labels or pr_status == 'closed':
@@ -414,53 +405,43 @@ if label_name not in pr_labels or pr_status == 'closed':
 # START CREATING/DEPLOYING #####################################################
 
 # see if there's a review app for this branch already
-kafka_app = get_app_by_name( app_name )
+app = get_app_by_name( app_name )
 
 app_id = None
-if kafka_app is not None:
-    app_id = kafka_app['id']
-    print ("Found kafka app id: " + app_id )
-    # Originating App - doesn't need to be deployed because Review Apps Beta
-    #   automatically deploys on push to the PR.
-    # Related App - we do not deploy here b/c we don't want to disrupt the state
-    #   of the related app as that may affect testing.
-    print("Already exists - no action necessary.")
+if app is not None:
+    app_id = app['id']
+    print ("Found originating app id: " + app_id )
+
+    # check existing addon attachments
+    addons = get_app_addons( app_name )
+    matching_addon = next((x for x in addons if x['name'] == args['ADDON_NAME']), None)
+
+    if matching_addon:
+        # no action necessary
+        print("Addon %s (%s) has already been added to %s." % (args['ADDON_NAME'], args['ADDON_PLAN'], app_name))
+
+    else:
+        # spin up a kafka addon for this app
+        print ("Creating addon %s (%s) for app %s..." % ( arg['ADDON_NAME'], arg['ADDON_PLAN'], app_name ))
+        addon = create_addon( app_name, args['ADDON_NAME'], args['ADDON_PLAN'] )
+        print(json.dumps(addon, sort_keys=True, indent=4))
+        if 'name' not in addon or addon['name'] != arg['ADDON_NAME']:
+            sys.exit("Couldn't create the addon.")
+
+        # attach the addon to apps
+        app_short_names = args['RELATED_APPS'].split(',')
+        app_short_names.append(app_origin)
+        print ("Attaching %s (%s) addon to multiple apps: %s" % (arg['ADDON_NAME'], arg['ADDON_PLAN'], ','.join(app_short_names)))
+
+        for attach_app_shortname in app_short_names:
+            attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
+            print ("Attaching %s (%s) addon to %s..." % (arg['ADDON_NAME'], arg['ADDON_PLAN'], attach_app_name))
+            attachment = attach_addon( attach_app_name, args['ADDON_NAME'], kafka_addon['name'] )
+            if 'name' not in attachment:
+                sys.exit("Couldn't attach addon %s (%s) to app %s" % (arg['ADDON_NAME'], arg['ADDON_PLAN'], app_name ))
 
 else:
-    print ("Found no existing app.")
+    sys.exit("Found no existing app: %s." % app_name)
 
-    # create the app
-    print ("Creating Kafka app...")
-    kafka_app = create_team_app( app_name, args['HEROKU_TEAM_NAME'] )
-
-    # attach to pipeline as development app
-    print ("Attaching to pipeline...")
-    if not add_to_pipeline( pipeline['id'], kafka_app['id'], 'development' ):
-        sys.exit("Couldn't attach app %s to pipeline %s" % (kafka_app['id'],pipeline['id']))
-
-    # grant access to all users
-    print ("Granting access to Kafka app...")
-    users = get_team_members( args['HEROKU_TEAM_NAME'] )
-    for email in [ x['email'] for x in users ]:
-        grant_review_app_access_to_user( app_name, email )
-
-    # spin up a kafka addon for this app
-    print ("Creating Kafka addon...")
-    kafka_addon = create_addon( app_name, 'heroku-kafka:basic-0' )
-    print(json.dumps(kafka_addon, sort_keys=True, indent=4))
-    if 'name' not in kafka_addon:
-        sys.exit("Couldn't create the Kafka addon.")
-
-    # attach the addon to apps
-    app_short_names = args['RELATED_APPS'].split(',')
-    app_short_names.append(app_origin)
-    print ("Attaching Kafka addon to multiple apps: "+','.join(app_short_names))
-
-    for attach_app_shortname in app_short_names:
-        attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
-        print ("Attaching Kafka addon to %s..." % attach_app_name)
-        attachment = attach_addon( attach_app_name, kafka_addon['name'] )
-        if 'name' not in attachment:
-            sys.exit("Couldn't attach kafka addon %s to app %s" % (kafka_addon['name'], ))
 
 print ("Done.")
