@@ -449,7 +449,7 @@ else:
     kafka_addon = create_addon( app_name, 'heroku-kafka:basic-0' )
 
     # attach the addon to apps
-    app_short_names = args['RELATED_APPS']
+    app_short_names = args['RELATED_APPS'].split(',')
     app_short_names.append(app_origin)
     print ("Attaching Kafka addon to multiple apps: "+','.join(app_short_names))
 
