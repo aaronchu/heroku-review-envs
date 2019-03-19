@@ -36,6 +36,13 @@ action "create-kafka" {
     "HEROKU_PIPELINE_NAME=myorg-kafka",
     ]
 }
+
+action "create-trr-website" {
+  uses = "TheRealReal/heroku-review-envs/heroku-app-create@create"
+  ...
+}
+
+...
 ```
 
 ## Secrets
