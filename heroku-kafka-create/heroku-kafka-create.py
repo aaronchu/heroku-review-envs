@@ -365,16 +365,9 @@ app_prefix = args['APP_PREFIX']
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
-# are we deploying the originating app, or a related app?
-if app_origin == app_short_name:
-    # originating app
-    repo = repo_origin
-    branch = branch_origin
-else:
-    # related app
-    repo = args['REPO']
-    branch = args['BRANCH']
-    commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
+# we are always deploying this using information from the origin app
+repo = repo_origin
+branch = branch_origin
 
 github_org = repo.split('/')[0]
 print ("GitHub Org: "+github_org)
