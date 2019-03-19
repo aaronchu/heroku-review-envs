@@ -450,12 +450,10 @@ else:
 
     # attach the addon to apps
     app_short_names = args['RELATED_APPS'].split(',')
-    print (args['RELATED_APPS'])
-    print (args['RELATED_APPS'].split(','))
     app_short_names.append(app_origin)
     print ("Attaching Kafka addon to multiple apps: "+','.join(app_short_names))
 
-    for attach_app_shortname in args['RELATED_APPS']:
+    for attach_app_shortname in app_short_names:
         attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
         print ("Attaching Kafka addon to %s..." % attach_app_name)
         if not attach_addon( attach_app_name, kafka_addon['addon_service']['id'] ):
