@@ -14,7 +14,6 @@ label_name = 'review-env'
 
 # tokens
 github_token = os.environ['GITHUB_TOKEN']
-gha_user_token = os.environ['GHA_USER_TOKEN']
 heroku_token = os.environ['HEROKU_API_TOKEN']
 
 # Heroku Related Functions #####################################################
@@ -254,7 +253,7 @@ def attach_addon( app_name, addon_id ):
 # basic headers for communicating with the GitHub API
 headers_github = {
     'Accept': 'application/vnd.github.v3+json',
-    'Authorization': 'token %s' % gha_user_token,
+    'Authorization': 'token %s' % github_token,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
