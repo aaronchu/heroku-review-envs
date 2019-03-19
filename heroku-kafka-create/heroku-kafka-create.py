@@ -458,9 +458,9 @@ else:
     for attach_app_shortname in app_short_names:
         attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
         print ("Attaching Kafka addon to %s..." % attach_app_name)
-        attachment = attach_addon( attach_app_name, kafka_addon['addon_service']['id'] )
+        attachment = attach_addon( attach_app_name, kafka_addon['name'] )
         print(json.dumps(attachment, sort_keys=True, indent=4))
         if not attachment:
-            sys.exit("Couldn't attach kafka addon %s to app %s" % (kafka_addon['addon_service']['id'], ))
+            sys.exit("Couldn't attach kafka addon %s to app %s" % (kafka_addon['name'], ))
 
 print ("Done.")
