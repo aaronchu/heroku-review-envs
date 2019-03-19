@@ -448,7 +448,8 @@ else:
     print ("Creating Kafka addon...")
     kafka_addon = create_addon( app_name, 'heroku-kafka:basic-0' )
     print(json.dumps(kafka_addon, sort_keys=True, indent=4))
-    print("blah")
+    if 'name' not in kafka_addon:
+        sys.exit("Couldn't create the Kafka addon.")
 
     # attach the addon to apps
     app_short_names = args['RELATED_APPS'].split(',')
@@ -459,8 +460,7 @@ else:
         attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
         print ("Attaching Kafka addon to %s..." % attach_app_name)
         attachment = attach_addon( attach_app_name, kafka_addon['name'] )
-        print(json.dumps(attachment, sort_keys=True, indent=4))
-        if not attachment:
+        if 'name' not in attachment:
             sys.exit("Couldn't attach kafka addon %s to app %s" % (kafka_addon['name'], ))
 
 print ("Done.")
