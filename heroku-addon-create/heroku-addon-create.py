@@ -418,11 +418,11 @@ if app is not None:
 
     if matching_addon:
         # no action necessary
-        print("Addon %s (%s) has already been added to %s." % (args['ADDON_NAME'], args['ADDON_PLAN'], app_name))
+        print("Addon %s (%s) has already been added to %s as %s." % (matching_addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
 
     else:
         # spin up the addon for this app
-        print ("Creating addon %s (%s) for app %s..." % ( args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
+        print ("Creating an addon plan = %s for app %s as %s..." % ( args['ADDON_PLAN'], app_name, args['ADDON_NAME' ))
         addon = create_addon( app_name, args['ADDON_NAME'], args['ADDON_PLAN'] )
         print(json.dumps(addon, sort_keys=True, indent=4))
         if 'name' not in addon:
@@ -430,18 +430,16 @@ if app is not None:
 
         # attach the addon to apps
         app_short_names = args['RELATED_APPS'].split(',')
-        print ("Attaching %s (%s) addon to multiple apps: %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], ','.join(app_short_names)))
+        print ("Attaching %s (%s) addon as %s to multiple apps: %s" % (addon['name'], args['ADDON_PLAN'], args['ADDON_NAME'], ','.join(app_short_names)))
 
         for attach_app_shortname in app_short_names:
             attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
-            print ("Attaching %s (%s) addon to %s..." % (args['ADDON_NAME'], args['ADDON_PLAN'], attach_app_name))
+            print ("Attaching addon %s (%s) to %s as %s..." % (addon['name'], args['ADDON_PLAN'], attach_app_name, args['ADDON_NAME']))
             attachment = attach_addon( attach_app_name, args['ADDON_NAME'], addon['name'] )
-            print(json.dumps(attachment, sort_keys=True, indent=4))
             if 'name' not in attachment:
-                sys.exit("Couldn't attach addon %s (%s) to app %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
+                sys.exit("Couldn't attach addon %s (%s) to app %s as %s" % (addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
 
 else:
     sys.exit("Found no existing app: %s." % app_name)
-
 
 print ("Done.")

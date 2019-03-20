@@ -1,14 +1,14 @@
 # heroku-addon-create
 
-This GitHub action creates and/or deploys to a Heroku Kafka App with a Kafka addon, and attach that addon to multiple Apps in the Review Environment.
+This GitHub action creates a Heroku addon attached to multiple Apps in the Review Environment. The main attachment of the addon will be to the Originating App in the Review Environment.
 
-This is suited to use when you are developing changes in a multi-app environment. In your GitHub Actions worksflow, you'll want to spin up your Apps first, then have this run and attach to those Apps.
+This is suited to use when you are developing changes in a multi-app environment. In your GitHub Actions workflow, you'll want to spin up your Apps first, then have this run and attach to those Apps. this is exhibited in the Usage section below.
 
 ## Terminology
 
 You're working on a pull request in an repo that corresponds to a Heroku app in a pipeline. Let's call that the `Development App`. It works with other apps either by calling them or being called by them. Those other apps are called `Related Apps`.
 
-This GitHub Action deploys both of those types of apps into your Heroku account.
+This GitHub Action deploys addons to those apps in your Heroku account.
 
 ## Usage
 
@@ -49,7 +49,7 @@ action "create-trr-website" {
 
 * `HEROKU_API_TOKEN` - **Required.** Token for communication with Heroku API.
   * This should be bound to a service or role user on your Heroku Team.
-  * This user must have view access to an existing app in each pipeline used here.
+  * This user must have view access to the originating app in your Review Environment.
 
 ## Arguments
 

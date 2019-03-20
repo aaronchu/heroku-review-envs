@@ -2,8 +2,8 @@ FROM debian:9.5-slim
 
 LABEL "com.github.actions.name"="Heroku Create Review Environment Addon"
 LABEL "com.github.actions.description"="Creates a Heroku Addon for a Review Environment"
-LABEL "com.github.actions.icon"="mic"
-LABEL "com.github.actions.color"="blue"
+LABEL "com.github.actions.icon"="plus-square"
+LABEL "com.github.actions.color"="purple"
 
 LABEL "repository"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "homepage"="http://github.com/TheRealReal/heroku-review-envs"
