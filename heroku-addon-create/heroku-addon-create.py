@@ -422,7 +422,7 @@ if app is not None:
 
     else:
         # spin up the addon for this app
-        print ("Creating an addon plan = %s for app %s as %s..." % ( args['ADDON_PLAN'], app_name, args['ADDON_NAME' ))
+        print ("Creating an addon plan = %s for app %s as %s..." % ( args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
         addon = create_addon( app_name, args['ADDON_NAME'], args['ADDON_PLAN'] )
         print(json.dumps(addon, sort_keys=True, indent=4))
         if 'name' not in addon:
