@@ -430,7 +430,6 @@ if app is not None:
 
         # attach the addon to apps
         app_short_names = args['RELATED_APPS'].split(',')
-        app_short_names.append(app_origin)
         print ("Attaching %s (%s) addon to multiple apps: %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], ','.join(app_short_names)))
 
         for attach_app_shortname in app_short_names:
