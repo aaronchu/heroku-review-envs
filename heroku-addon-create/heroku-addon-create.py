@@ -437,6 +437,7 @@ if app is not None:
             attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
             print ("Attaching %s (%s) addon to %s..." % (args['ADDON_NAME'], args['ADDON_PLAN'], attach_app_name))
             attachment = attach_addon( attach_app_name, args['ADDON_NAME'], addon['name'] )
+            print(json.dumps(attachment, sort_keys=True, indent=4))
             if 'name' not in attachment:
                 sys.exit("Couldn't attach addon %s (%s) to app %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
 
