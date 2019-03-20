@@ -422,23 +422,23 @@ if app is not None:
 
     else:
         # spin up a kafka addon for this app
-        print ("Creating addon %s (%s) for app %s..." % ( arg['ADDON_NAME'], arg['ADDON_PLAN'], app_name ))
+        print ("Creating addon %s (%s) for app %s..." % ( args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
         addon = create_addon( app_name, args['ADDON_NAME'], args['ADDON_PLAN'] )
         print(json.dumps(addon, sort_keys=True, indent=4))
-        if 'name' not in addon or addon['name'] != arg['ADDON_NAME']:
+        if 'name' not in addon or addon['name'] != args['ADDON_NAME']:
             sys.exit("Couldn't create the addon.")
 
         # attach the addon to apps
         app_short_names = args['RELATED_APPS'].split(',')
         app_short_names.append(app_origin)
-        print ("Attaching %s (%s) addon to multiple apps: %s" % (arg['ADDON_NAME'], arg['ADDON_PLAN'], ','.join(app_short_names)))
+        print ("Attaching %s (%s) addon to multiple apps: %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], ','.join(app_short_names)))
 
         for attach_app_shortname in app_short_names:
             attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
-            print ("Attaching %s (%s) addon to %s..." % (arg['ADDON_NAME'], arg['ADDON_PLAN'], attach_app_name))
+            print ("Attaching %s (%s) addon to %s..." % (args['ADDON_NAME'], args['ADDON_PLAN'], attach_app_name))
             attachment = attach_addon( attach_app_name, args['ADDON_NAME'], kafka_addon['name'] )
             if 'name' not in attachment:
-                sys.exit("Couldn't attach addon %s (%s) to app %s" % (arg['ADDON_NAME'], arg['ADDON_PLAN'], app_name ))
+                sys.exit("Couldn't attach addon %s (%s) to app %s" % (args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
 
 else:
     sys.exit("Found no existing app: %s." % app_name)
