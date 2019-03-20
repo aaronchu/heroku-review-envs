@@ -58,7 +58,7 @@ In order to supply arguments to this action, use a format similar to environment
 * `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
 * `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
 * `APP_NAME` - **Required.** The name of the Development App being deployed.
-* `RELATED_APPS` - **Required.** Other Apps in the Review Environment to attach this Kafka to.
+* `RELATED_APPS` - **Required.** Other Apps in the Review Environment to attach this addon to.
 * `ADDON_PLAN` - **Required.** The Heroku Addon Plan to use, for example: `heroku-kafka:basic-0`.
 * `ADDON_NAME` - **Required.** The name of the attachment of this Heroku Addon. This action will not add another addon if one with this name is detected on the Originating App.
 
