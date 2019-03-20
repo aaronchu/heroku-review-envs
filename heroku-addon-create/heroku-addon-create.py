@@ -425,7 +425,7 @@ if app is not None:
         print ("Creating addon %s (%s) for app %s..." % ( args['ADDON_NAME'], args['ADDON_PLAN'], app_name ))
         addon = create_addon( app_name, args['ADDON_NAME'], args['ADDON_PLAN'] )
         print(json.dumps(addon, sort_keys=True, indent=4))
-        if 'name' not in addon or addon['name'] != args['ADDON_NAME']:
+        if 'name' not in addon:
             sys.exit("Couldn't create the addon.")
 
         # attach the addon to apps
