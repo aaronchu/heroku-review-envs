@@ -8,41 +8,41 @@ import sys
 import time
 
 # some constants
-label_name = 'review-env'
+LABEL_NAME = 'review-env'
 
 # tokens
-heroku_token = os.environ['HEROKU_API_TOKEN']
-github_token = os.environ['GITHUB_TOKEN']
+HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
+GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 
 # basic headers for communicating with the Heroku API
-headers_heroku = {
+HEADERS_HEROKU = {
     'Accept': 'application/vnd.heroku+json; version=3.review-apps',
-    'Authorization': 'Bearer %s' % heroku_token,
+    'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
-headers_heroku_review_pipelines = {
+HEADERS_HEROKU_REVIEW_PIPELINES = {
     'Accept': 'application/vnd.heroku+json; version=3.pipelines',
-    'Authorization': 'Bearer %s' % heroku_token,
+    'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
 
-api_url_heroku = 'https://api.heroku.com'
+API_URL_HEROKU = 'https://api.heroku.com'
 
 # basic headers for communicating with the GitHub API
-headers_github = {
+HEADERS_GITHUB = {
     'Accept': 'application/vnd.github.v3+json',
-    'Authorization': 'token %s' % github_token,
+    'Authorization': 'token %s' % GITHUB_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json'
     }
-api_url_github = 'https://api.github.com'
+API_URL_GITHUB = 'https://api.github.com'
 
 # Heroku Related Functions #####################################################
 
 def get_review_app_by_branch( pipeline_id, branch_name ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
     reviewapps = json.loads(r.text)
     reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
     try:
@@ -53,7 +53,7 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     return None
 
 def get_app_by_name( app_name ):
-    r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
 #    print(json.dumps(apps, sort_keys=True, indent=4))
     app = next((x for x in apps if x['name'] == app_name), None)
@@ -73,7 +73,7 @@ def create_addon( app_name, addon_name, addon_plan, addon_config=None ):
     }
     if addon_config:
         payload['config'] = addon_config
-    r = requests.post(api_url_heroku+'/apps/'+app_name+'/addons', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/apps/'+app_name+'/addons', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
     return json.loads(r.text)
 
 def attach_addon( app_name, addon_name, addon_id ):
@@ -82,18 +82,18 @@ def attach_addon( app_name, addon_name, addon_id ):
         'app': app_name,
         'name': addon_name
     }
-    r = requests.post(api_url_heroku+'/addon-attachments', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/addon-attachments', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
     return json.loads(r.text)
 
 def get_app_addons( app_name ):
-    r = requests.get(api_url_heroku+'/apps/'+app_name+'/addon-attachments', headers=headers_heroku_review_pipelines)
+    r = requests.get(API_URL_HEROKU+'/apps/'+app_name+'/addon-attachments', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
     addons = json.loads(r.text)
     return addons
 
 # GitHub Related Functions #####################################################
 
 def get_latest_commit_for_branch( repo, branch_name ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/branches/'+branch_name, headers=headers_github)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+branch_name, headers=HEADERS_GITHUB)
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
@@ -101,7 +101,7 @@ def get_latest_commit_for_branch( repo, branch_name ):
         return None
 
 def get_pr_name( repo, branch_name, page=1 ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=headers_github)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
     pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
     if pr:
@@ -113,7 +113,7 @@ def add_pr_comment( repo, pr_id, message):
     payload = {
         'body': message
     }
-    r = requests.post(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
+    r = requests.post(API_URL_GITHUB+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=HEADERS_GITHUB, data=json.dumps(payload))
     comment = json.loads(r.text)
     return comment
 
@@ -216,8 +216,8 @@ print ("App Name: "+app_name)
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if label_name not in pr_labels or pr_status == 'closed':
-    print("To spin up a review environment, label your open pr with "+label_name)
+if LABEL_NAME not in pr_labels or pr_status == 'closed':
+    print("To spin up a review environment, label your open pr with "+LABEL_NAME)
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
