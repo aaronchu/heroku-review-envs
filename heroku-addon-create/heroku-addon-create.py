@@ -84,7 +84,7 @@ def attach_addon( app_name, addon_name, addon_id ):
     r = requests.post(API_URL_HEROKU+'/addon-attachments', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
     return json.loads(r.text)
 
-def get_app_addons( app_name ):
+def get_app_addon_attachments( app_name ):
     r = requests.get(API_URL_HEROKU+'/apps/'+app_name+'/addon-attachments', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
     addons = json.loads(r.text)
     return addons
@@ -230,8 +230,8 @@ if app is not None:
     print ("Found originating app id: " + app_id )
 
     # check existing addon attachments
-    addons = get_app_addons( app_name )
-    addon = next((x for x in addons if x['name'] == args['ADDON_NAME']), None)
+    addon_attachments = get_app_addon_attachments( app_name )
+    addon = next((x['addon'] for x in addon_attachments if x['name'] == args['ADDON_NAME']), None)
 
     if addon:
         # no action necessary
@@ -251,7 +251,7 @@ if app is not None:
 
     for attach_app_shortname in app_short_names:
         attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix )
-        existing_app_addons = get_app_addons( attach_app_name )
+        existing_app_addons = get_app_addon_attachments( attach_app_name )
         existing_app_addon = next((x for x in existing_app_addons if x['name'] == args['ADDON_NAME']), None)
         if existing_app_addon:
             print ("App %s already has addon %s (%s) attached as %s." % (attach_app_name, addon['name'], args['ADDON_PLAN'], args['ADDON_NAME']))
