@@ -235,7 +235,7 @@ if app is not None:
 
     if addon:
         # no action necessary
-        print("Addon %s (%s) has already been added to %s as %s." % (matching_addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
+        print("Addon %s (%s) has already been added to %s as %s." % (addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
 
     else:
         # spin up the addon for this app
