@@ -259,7 +259,7 @@ if app is not None:
             print ("Attaching addon %s (%s) to %s as %s..." % (addon['name'], args['ADDON_PLAN'], attach_app_name, args['ADDON_NAME']))
             attachment = attach_addon( attach_app_name, args['ADDON_NAME'], addon['name'] )
             if 'name' not in attachment:
-                sys.exit("Couldn't attach addon %s (%s) to app %s as %s" % (addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
+                sys.exit("Couldn't attach addon %s (%s) to app %s as %s" % (addon['name'], args['ADDON_PLAN'], attach_app_name, args['ADDON_NAME'] ))
 
 else:
     sys.exit("Found no existing app: %s." % app_name)
