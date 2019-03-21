@@ -231,9 +231,9 @@ if app is not None:
 
     # check existing addon attachments
     addons = get_app_addons( app_name )
-    matching_addon = next((x for x in addons if x['name'] == args['ADDON_NAME']), None)
+    addon = next((x for x in addons if x['name'] == args['ADDON_NAME']), None)
 
-    if matching_addon:
+    if addon:
         # no action necessary
         print("Addon %s (%s) has already been added to %s as %s." % (matching_addon['name'], args['ADDON_PLAN'], app_name, args['ADDON_NAME'] ))
 
@@ -245,12 +245,17 @@ if app is not None:
         if 'name' not in addon:
             sys.exit("Couldn't create the addon.")
 
-        # attach the addon to apps
-        app_short_names = args['RELATED_APPS'].split(',')
-        print ("Attaching %s (%s) addon as %s to multiple apps: %s" % (addon['name'], args['ADDON_PLAN'], args['ADDON_NAME'], ','.join(app_short_names)))
+    # attach the addon to apps
+    app_short_names = args['RELATED_APPS'].split(',')
+    print ("Attaching %s (%s) addon as %s to multiple apps: %s" % (addon['name'], args['ADDON_PLAN'], args['ADDON_NAME'], ','.join(app_short_names)))
 
-        for attach_app_shortname in app_short_names:
-            attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix ),
+    for attach_app_shortname in app_short_names:
+        attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix )
+        existing_app_addons = get_app_addons( attach_app_name )
+        existing_app_addon = next((x for x in existing_app_addons if x['name'] == args['ADDON_NAME']), None)
+        if existing_app_addon:
+            print ("App %s already has addon %s (%s) attached as %s." % (attach_app_name, addon['name'], args['ADDON_PLAN'], args['ADDON_NAME']))
+        else:
             print ("Attaching addon %s (%s) to %s as %s..." % (addon['name'], args['ADDON_PLAN'], attach_app_name, args['ADDON_NAME']))
             attachment = attach_addon( attach_app_name, args['ADDON_NAME'], addon['name'] )
             if 'name' not in attachment:
