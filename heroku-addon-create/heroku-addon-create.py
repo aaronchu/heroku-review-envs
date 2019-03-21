@@ -8,15 +8,11 @@ import sys
 import time
 
 # some constants
-timeout = 20
-app_domain_suffix = '.herokuapp.com'
 label_name = 'review-env'
 
 # tokens
-github_token = os.environ['GITHUB_TOKEN']
 heroku_token = os.environ['HEROKU_API_TOKEN']
-
-# Heroku Related Functions #####################################################
+github_token = os.environ['GITHUB_TOKEN']
 
 # basic headers for communicating with the Heroku API
 headers_heroku = {
@@ -34,6 +30,17 @@ headers_heroku_review_pipelines = {
 
 api_url_heroku = 'https://api.heroku.com'
 
+# basic headers for communicating with the GitHub API
+headers_github = {
+    'Accept': 'application/vnd.github.v3+json',
+    'Authorization': 'token %s' % github_token,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
+api_url_github = 'https://api.github.com'
+
+# Heroku Related Functions #####################################################
+
 def get_review_app_by_branch( pipeline_id, branch_name ):
     r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
     reviewapps = json.loads(r.text)
@@ -44,29 +51,6 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     except:
         pass
     return None
-
-def get_review_app_by_id( pipeline_id, id ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
-    reviewapps = json.loads(r.text)
-    reviewapp = next((x for x in reviewapps if x['id'] == id), None)
-    try:
-        if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
-            return reviewapp
-    except:
-        pass
-    return None
-
-def get_app_setup_by_id( app_setup_id ):
-    r = requests.get(api_url_heroku+'/app-setups/'+app_setup_id, headers=headers_heroku)
-    app_setup = json.loads(r.text)
-    return app_setup
-
-def delete_app_by_name( app_name ):
-    if '-pr-' not in app_name:
-        sys.exit("Tried to delete app "+app_name+" - refusing for safety's sake.")
-    r = requests.delete(api_url_heroku+'/apps/'+app_name, headers=headers_heroku)
-    response = json.loads(r.text)
-    return response
 
 def get_app_by_name( app_name ):
     r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
@@ -79,157 +63,6 @@ def get_app_by_name( app_name ):
     except:
         pass
     return None
-
-def get_app_by_id( app_id ):
-    r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
-    apps = json.loads(r.text)
-#    print(json.dumps(apps, sort_keys=True, indent=4))
-    app = next((x for x in apps if x['id'] == app_id), None)
-    try:
-        if app is not None and 'id' in app:
-            return app
-    except:
-        pass
-    return None
-
-def rename_app( app_id, app_name ):
-    r = requests.patch(api_url_heroku+'/apps/'+app_id, headers=headers_heroku, data=json.dumps( {'name': app_name[:30]} ))
-    return r.status_code is 200
-
-def get_pipeline_by_name( pipeline_name ):
-    r = requests.get(api_url_heroku+'/pipelines', headers=headers_heroku)
-    pipelines = json.loads(r.text)
-    pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
-    if pipeline is not None and 'id' in pipeline:
-        return pipeline
-    else:
-        return None
-
-def get_download_url( repo, branch, token ):
-    # pulls the 302 location out of the redirect
-    download_url = 'https://api.github.com/repos/'+repo+'/tarball/'+branch+'?access_token='+token
-    try:
-        r = requests.get(download_url, allow_redirects=False)
-        if r.status_code == 302:
-            return r.headers['location']
-    except:
-        pass
-    return None
-
-def create_team_app( name, team ):
-    r = requests.post(api_url_heroku+'/teams/apps', headers=headers_heroku, data=json.dumps( {'name': name, 'team': team} ))
-    app = json.loads(r.text)
-    print(json.dumps(app, sort_keys=True, indent=4))
-    if 'id' in app:
-        return app
-    else:
-        return None
-
-def create_app_setup( name, team, source_code_tgz_url, commit_sha, envs ):
-    payload = {
-        'source_blob': {
-            'url': source_code_tgz_url,
-            'version': commit_sha,
-        },
-        'app': {
-            'name': name,
-            'organization': team
-        },
-        'overrides': {
-            'env': envs
-        }
-    }
-    print(json.dumps(payload, sort_keys=True, indent=4))
-    r = requests.post(api_url_heroku+'/app-setups', headers=headers_heroku, data=json.dumps(payload))
-    app_setup = json.loads(r.text)
-    print(json.dumps(app_setup, sort_keys=True, indent=4))
-    if 'id' in app_setup:
-        return app_setup
-    else:
-        return None
-
-def add_to_pipeline( pipeline_id, app_id, stage ):
-    payload = {
-        'app': app_id,
-        'pipeline': pipeline_id,
-        'stage': stage if stage in [ 'test',' review', 'development', 'staging', 'production' ] else 'development'
-    }
-    r = requests.post(api_url_heroku+'/pipeline-couplings', headers=headers_heroku, data=json.dumps(payload))
-    coupling = json.loads(r.text)
-    print(json.dumps(coupling, sort_keys=True, indent=4))
-    if 'created_at' in coupling:
-        return True
-    else:
-        return None
-
-def deploy_to_app( app_id, source_code_tgz_url, commit_sha ):
-    payload = {
-        'source_blob': {
-            'url': source_code_tgz_url,
-            'version': commit_sha,
-        },
-    }
-    r = requests.post(api_url_heroku+'/apps/'+app_id+'/builds', headers=headers_heroku, data=json.dumps(payload))
-    response = json.loads(r.text)
-    if 'status' in response:
-        return response
-    else:
-        return None
-
-def get_features_for_app( app_id ):
-    r = requests.get(api_url_heroku+'/apps/'+app_id+'/features', headers=headers_heroku)
-    features = json.loads(r.text)
-    try:
-        if features[0]['id'] and features[0]['doc_url']:
-            return features
-    except:
-        pass
-    return None
-
-def get_config_vars_for_app( app_id ):
-    r = requests.get(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku)
-    config_vars = json.loads(r.text)
-    return config_vars
-
-def set_config_vars_for_app( app_id, config_vars ):
-    r = requests.patch(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku, data=json.dumps(config_vars))
-    result = json.loads(r.text)
-    if r.status_code != 200:
-        return None
-    for key, value in result.items():
-        if key in config_vars and result[key] != config_vars[key]:
-            return None
-    return config_vars
-
-def add_buildpacks_to_app( app_id, buildpack_urls ):
-    buildpack_changes = {
-        'updates': [{ 'buildpack': x } for x in buildpack_urls]
-    }
-    buildpack_changes['updates']
-    r = requests.put(api_url_heroku+'/apps/'+app_id+'/buildpack-installations', headers=headers_heroku, data=json.dumps(buildpack_changes))
-    result = json.loads(r.text)
-    if r.status_code != 200:
-        return None
-    return result
-
-def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=headers_heroku_review_pipelines)
-    config_vars = json.loads(r.text)
-    return config_vars
-
-def grant_review_app_access_to_user( app_name, email ):
-    payload = {
-        'user': email,
-        'permissions': ['view', 'deploy', 'operate'],
-        'silent': True
-    }
-    r = requests.post(api_url_heroku+'/teams/apps/'+app_name+'/collaborators', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
-    return json.loads(r.text)
-
-def get_team_members( team_name ):
-    r = requests.get(api_url_heroku+'/teams/'+team_name+'/members', headers=headers_heroku_review_pipelines)
-    team_members = json.loads(r.text)
-    return team_members
 
 def create_addon( app_name, addon_name, addon_plan, addon_config=None ):
     payload = {
@@ -258,15 +91,6 @@ def get_app_addons( app_name ):
     return addons
 
 # GitHub Related Functions #####################################################
-
-# basic headers for communicating with the GitHub API
-headers_github = {
-    'Accept': 'application/vnd.github.v3+json',
-    'Authorization': 'token %s' % github_token,
-    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
-    }
-api_url_github = 'https://api.github.com'
 
 def get_latest_commit_for_branch( repo, branch_name ):
     r = requests.get(api_url_github+'/repos/'+repo+'/branches/'+branch_name, headers=headers_github)
@@ -393,13 +217,7 @@ print ("App Name: "+app_name)
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
 if label_name not in pr_labels or pr_status == 'closed':
-    if get_app_by_name( app_name ):
-        # if app is already spun up, shut it down
-        print("Spinning down app "+app_name)
-        delete_app_by_name( app_name )
-    else:
-        # If nothing is spun up so far
-        print("To spin up a review environment, label your open pr with "+label_name)
+    print("To spin up a review environment, label your open pr with "+label_name)
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
