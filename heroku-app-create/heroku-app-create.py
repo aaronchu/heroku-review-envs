@@ -8,35 +8,45 @@ import sys
 import time
 
 # some constants
-timeout = 20
-app_domain_suffix = '.herokuapp.com'
-label_name = 'review-env'
+TIMEOUT = 20
+APP_DOMAIN_SUFFIX = '.herokuapp.com'
+LABEL_NAME = 'review-env'
 
 # tokens
-github_token = os.environ['GITHUB_TOKEN']
-gha_user_token = os.environ['GHA_USER_TOKEN']
-heroku_token = os.environ['HEROKU_API_TOKEN']
+GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
+GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
+HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
+
+# basic headers for communicating with the Heroku API
+HEADERS_HEROKU = {
+    'Accept': 'application/vnd.heroku+json; version=3.review-apps',
+    'Authorization': 'Bearer %s' % HEROKU_TOKEN,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
+HEADERS_HEROKU_REVIEW_PIPELINES = {
+    'Accept': 'application/vnd.heroku+json; version=3.pipelines',
+    'Authorization': 'Bearer %s' % HEROKU_TOKEN,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
+
+API_URL_HEROKU = 'https://api.heroku.com'
+
+# basic headers for communicating with the GitHub API
+HEADERS_GITHUB = {
+    'Accept': 'application/vnd.github.v3+json',
+    'Authorization': 'token %s' % GHA_USER_TOKEN,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
+API_URL_GITHUB = 'https://api.github.com'
 
 # Heroku Related Functions #####################################################
 
-# basic headers for communicating with the Heroku API
-headers_heroku = {
-    'Accept': 'application/vnd.heroku+json; version=3.review-apps',
-    'Authorization': 'Bearer %s' % heroku_token,
-    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
-    }
-headers_heroku_review_pipelines = {
-    'Accept': 'application/vnd.heroku+json; version=3.pipelines',
-    'Authorization': 'Bearer %s' % heroku_token,
-    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
-    }
-
-api_url_heroku = 'https://api.heroku.com'
 
 def get_review_app_by_branch( pipeline_id, branch_name ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
     reviewapps = json.loads(r.text)
     reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
     try:
@@ -47,7 +57,7 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     return None
 
 def get_review_app_by_id( pipeline_id, id ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/review-apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
     reviewapps = json.loads(r.text)
     reviewapp = next((x for x in reviewapps if x['id'] == id), None)
     try:
@@ -58,21 +68,20 @@ def get_review_app_by_id( pipeline_id, id ):
     return None
 
 def get_app_setup_by_id( app_setup_id ):
-    r = requests.get(api_url_heroku+'/app-setups/'+app_setup_id, headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/app-setups/'+app_setup_id, headers=HEADERS_HEROKU)
     app_setup = json.loads(r.text)
     return app_setup
 
 def delete_app_by_name( app_name ):
     if '-pr-' not in app_name:
         sys.exit("Tried to delete app "+app_name+" - refusing for safety's sake.")
-    r = requests.delete(api_url_heroku+'/apps/'+app_name, headers=headers_heroku)
+    r = requests.delete(API_URL_HEROKU+'/apps/'+app_name, headers=HEADERS_HEROKU)
     response = json.loads(r.text)
     return response
 
 def get_app_by_name( app_name ):
-    r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
-#    print(json.dumps(apps, sort_keys=True, indent=4))
     app = next((x for x in apps if x['name'] == app_name), None)
     try:
         if app is not None and 'id' in app:
@@ -82,9 +91,8 @@ def get_app_by_name( app_name ):
     return None
 
 def get_app_by_id( app_id ):
-    r = requests.get(api_url_heroku+'/apps', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
-#    print(json.dumps(apps, sort_keys=True, indent=4))
     app = next((x for x in apps if x['id'] == app_id), None)
     try:
         if app is not None and 'id' in app:
@@ -94,11 +102,11 @@ def get_app_by_id( app_id ):
     return None
 
 def rename_app( app_id, app_name ):
-    r = requests.patch(api_url_heroku+'/apps/'+app_id, headers=headers_heroku, data=json.dumps( {'name': app_name[:30]} ))
+    r = requests.patch(API_URL_HEROKU+'/apps/'+app_id, headers=HEADERS_HEROKU, data=json.dumps( {'name': app_name[:30]} ))
     return r.status_code is 200
 
 def get_pipeline_by_name( pipeline_name ):
-    r = requests.get(api_url_heroku+'/pipelines', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/pipelines', headers=HEADERS_HEROKU)
     pipelines = json.loads(r.text)
     pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
     if pipeline is not None and 'id' in pipeline:
@@ -118,7 +126,7 @@ def get_download_url( repo, branch, token ):
     return None
 
 def create_team_app( name, team ):
-    r = requests.post(api_url_heroku+'/teams/apps', headers=headers_heroku, data=json.dumps( {'name': name, 'team': team} ))
+    r = requests.post(API_URL_HEROKU+'/teams/apps', headers=HEADERS_HEROKU, data=json.dumps( {'name': name, 'team': team} ))
     app = json.loads(r.text)
     print(json.dumps(app, sort_keys=True, indent=4))
     if 'id' in app:
@@ -141,7 +149,7 @@ def create_app_setup( name, team, source_code_tgz_url, commit_sha, envs ):
         }
     }
     print(json.dumps(payload, sort_keys=True, indent=4))
-    r = requests.post(api_url_heroku+'/app-setups', headers=headers_heroku, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/app-setups', headers=HEADERS_HEROKU, data=json.dumps(payload))
     app_setup = json.loads(r.text)
     print(json.dumps(app_setup, sort_keys=True, indent=4))
     if 'id' in app_setup:
@@ -155,7 +163,7 @@ def add_to_pipeline( pipeline_id, app_id, stage ):
         'pipeline': pipeline_id,
         'stage': stage if stage in [ 'test',' review', 'development', 'staging', 'production' ] else 'development'
     }
-    r = requests.post(api_url_heroku+'/pipeline-couplings', headers=headers_heroku, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/pipeline-couplings', headers=HEADERS_HEROKU, data=json.dumps(payload))
     coupling = json.loads(r.text)
     print(json.dumps(coupling, sort_keys=True, indent=4))
     if 'created_at' in coupling:
@@ -170,7 +178,7 @@ def deploy_to_app( app_id, source_code_tgz_url, commit_sha ):
             'version': commit_sha,
         },
     }
-    r = requests.post(api_url_heroku+'/apps/'+app_id+'/builds', headers=headers_heroku, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/apps/'+app_id+'/builds', headers=HEADERS_HEROKU, data=json.dumps(payload))
     response = json.loads(r.text)
     if 'status' in response:
         return response
@@ -178,7 +186,7 @@ def deploy_to_app( app_id, source_code_tgz_url, commit_sha ):
         return None
 
 def get_features_for_app( app_id ):
-    r = requests.get(api_url_heroku+'/apps/'+app_id+'/features', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/apps/'+app_id+'/features', headers=HEADERS_HEROKU)
     features = json.loads(r.text)
     try:
         if features[0]['id'] and features[0]['doc_url']:
@@ -188,12 +196,12 @@ def get_features_for_app( app_id ):
     return None
 
 def get_config_vars_for_app( app_id ):
-    r = requests.get(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku)
+    r = requests.get(API_URL_HEROKU+'/apps/'+app_id+'/config-vars', headers=HEADERS_HEROKU)
     config_vars = json.loads(r.text)
     return config_vars
 
 def set_config_vars_for_app( app_id, config_vars ):
-    r = requests.patch(api_url_heroku+'/apps/'+app_id+'/config-vars', headers=headers_heroku, data=json.dumps(config_vars))
+    r = requests.patch(API_URL_HEROKU+'/apps/'+app_id+'/config-vars', headers=HEADERS_HEROKU, data=json.dumps(config_vars))
     result = json.loads(r.text)
     if r.status_code != 200:
         return None
@@ -207,14 +215,14 @@ def add_buildpacks_to_app( app_id, buildpack_urls ):
         'updates': [{ 'buildpack': x } for x in buildpack_urls]
     }
     buildpack_changes['updates']
-    r = requests.put(api_url_heroku+'/apps/'+app_id+'/buildpack-installations', headers=headers_heroku, data=json.dumps(buildpack_changes))
+    r = requests.put(API_URL_HEROKU+'/apps/'+app_id+'/buildpack-installations', headers=HEADERS_HEROKU, data=json.dumps(buildpack_changes))
     result = json.loads(r.text)
     if r.status_code != 200:
         return None
     return result
 
 def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
-    r = requests.get(api_url_heroku+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=headers_heroku_review_pipelines)
+    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
     config_vars = json.loads(r.text)
     return config_vars
 
@@ -224,27 +232,18 @@ def grant_review_app_access_to_user( app_name, email ):
         'permissions': ['view', 'deploy', 'operate'],
         'silent': True
     }
-    r = requests.post(api_url_heroku+'/teams/apps/'+app_name+'/collaborators', headers=headers_heroku_review_pipelines, data=json.dumps(payload))
+    r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
     return json.loads(r.text)
 
 def get_team_members( team_name ):
-    r = requests.get(api_url_heroku+'/teams/'+team_name+'/members', headers=headers_heroku_review_pipelines)
+    r = requests.get(API_URL_HEROKU+'/teams/'+team_name+'/members', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
     team_members = json.loads(r.text)
     return team_members
 
 # GitHub Related Functions #####################################################
 
-# basic headers for communicating with the GitHub API
-headers_github = {
-    'Accept': 'application/vnd.github.v3+json',
-    'Authorization': 'token %s' % gha_user_token,
-    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
-    }
-api_url_github = 'https://api.github.com'
-
 def get_latest_commit_for_branch( repo, branch_name ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/branches/'+branch_name, headers=headers_github)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+branch_name, headers=HEADERS_GITHUB)
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
@@ -252,7 +251,7 @@ def get_latest_commit_for_branch( repo, branch_name ):
         return None
 
 def get_pr_name( repo, branch_name, page=1 ):
-    r = requests.get(api_url_github+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=headers_github)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
     pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
     if pr:
@@ -264,7 +263,7 @@ def add_pr_comment( repo, pr_id, message):
     payload = {
         'body': message
     }
-    r = requests.post(api_url_github+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=headers_github, data=json.dumps(payload))
+    r = requests.post(API_URL_GITHUB+'/repos/'+repo+'/issues/'+str(pr_id)+'/comments', headers=HEADERS_GITHUB, data=json.dumps(payload))
     comment = json.loads(r.text)
     return comment
 
@@ -392,14 +391,14 @@ except:
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if label_name not in pr_labels or pr_status == 'closed':
+if LABEL_NAME not in pr_labels or pr_status == 'closed':
     if get_app_by_name( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
     else:
         # If nothing is spun up so far
-        print("To spin up a review environment, label your open pr with "+label_name)
+        print("To spin up a review environment, label your open pr with "+LABEL_NAME)
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
@@ -414,7 +413,7 @@ if reviewapp is None and app_origin == app_short_name:
 # Heroku wants us to pull the 302 location for the actual code download by
 # using this URL - the token gets modified, we don't know how, so we gotta pull
 # it before submitting to Heroku.
-source_code_tgz = get_download_url( repo, branch, gha_user_token )
+source_code_tgz = get_download_url( repo, branch, GHA_USER_TOKEN )
 if source_code_tgz is None:
     sys.exit("Couldn't get the redirect location for source code download.")
 
@@ -449,7 +448,7 @@ else:
             (app_var, app_url) = pair.split('%')
             m = re.match(r'^(.*)<(.+)>(.*)$', app_url)
             name = m.group(2)
-            set_vars[app_var] = m.group(1) + get_app_name( app_origin, name, pr_num, app_prefix ) + app_domain_suffix + m.group(3)
+            set_vars[app_var] = m.group(1) + get_app_name( app_origin, name, pr_num, app_prefix ) + APP_DOMAIN_SUFFIX + m.group(3)
             print ("Referencing app: " + app_var + '=' + set_vars[app_var])
     set_vars['HEROKU_APP_NAME'] = app_name
 
@@ -467,7 +466,7 @@ else:
         }
         print(json.dumps(payload, sort_keys=True, indent=4))
         try:
-            r = requests.post(api_url_heroku+'/review-apps', headers=headers_heroku, data=json.dumps(payload))
+            r = requests.post(API_URL_HEROKU+'/review-apps', headers=HEADERS_HEROKU, data=json.dumps(payload))
             response = json.loads(r.text)
             print ("Created ReviewApp:")
             print(json.dumps(response, sort_keys=True, indent=4))
@@ -477,14 +476,14 @@ else:
             sys.exit("Couldn't create ReviewApp.")
 
         # look up the app ID, wait for it to show up
-        for i in range(0, timeout):
+        for i in range(0, TIMEOUT):
             print ("Checking for reviewapp spawn...")
             reviewapp = get_review_app_by_id( pipeline['id'], reviewapp_id )
             if reviewapp is not None:
                 app_id = reviewapp['app']['id']
                 break
             time.sleep(1)
-            if i == timeout:
+            if i == TIMEOUT:
                 sys.exit("timed out waiting for app to instantiate.")
             else:
                 print ("waiting...")
@@ -519,14 +518,14 @@ else:
         app_setup = create_app_setup( app_name, args['HEROKU_TEAM_NAME'], source_code_tgz, commit_sha, config_vars )
 
         # look up the app ID, wait for it to show up
-        for i in range(0, timeout):
+        for i in range(0, TIMEOUT):
             print ("Checking for app spawn...")
             app_setup = get_app_setup_by_id( app_setup['id'] )
             if app_setup is not None:
                 app_id = app_setup['app']['id']
                 break
             time.sleep(1)
-            if i == timeout:
+            if i == TIMEOUT:
                 sys.exit("timed out waiting for app to instantiate.")
             else:
                 print ("waiting...")
