@@ -1,8 +1,8 @@
 FROM debian:9.5-slim
 
-LABEL "com.github.actions.name"="Heroku Create Review Environment App"
-LABEL "com.github.actions.description"="Creates a Review App for a Review Environment"
-LABEL "com.github.actions.icon"="box"
+LABEL "com.github.actions.name"="Heroku Create Review Environment Addon"
+LABEL "com.github.actions.description"="Creates a Heroku Addon for a Review Environment"
+LABEL "com.github.actions.icon"="plus-square"
 LABEL "com.github.actions.color"="purple"
 
 LABEL "repository"="http://github.com/TheRealReal/heroku-review-envs"
@@ -20,8 +20,8 @@ RUN \
 RUN \
   pip3 install requests
 
-ADD heroku-app-create.py /heroku-app-create.py
+ADD heroku-addon-create.py /heroku-addon-create.py
 
-RUN chmod +x /heroku-app-create.py
+RUN chmod +x /heroku-addon-create.py
 
-ENTRYPOINT ["/heroku-app-create.py"]
+ENTRYPOINT ["/heroku-addon-create.py"]
