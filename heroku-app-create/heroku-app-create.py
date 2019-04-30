@@ -229,7 +229,7 @@ def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
 def grant_review_app_access_to_user( app_name, email ):
     payload = {
         'user': email,
-        'permissions': ['view', 'deploy', 'operate'],
+        'permissions': ['view', 'manage'],
         'silent': True
     }
     r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
