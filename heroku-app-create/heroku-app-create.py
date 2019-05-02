@@ -6,6 +6,7 @@ import requests
 import re
 import sys
 import time
+import urllib.parse
 
 # some constants
 TIMEOUT = 20
@@ -113,17 +114,6 @@ def get_pipeline_by_name( pipeline_name ):
         return pipeline
     else:
         return None
-
-def get_download_url( repo, branch, token ):
-    # pulls the 302 location out of the redirect
-    download_url = 'https://api.github.com/repos/'+repo+'/tarball/'+branch+'?access_token='+token
-    try:
-        r = requests.get(download_url, allow_redirects=False)
-        if r.status_code == 302:
-            return r.headers['location']
-    except:
-        pass
-    return None
 
 def create_team_app( name, team ):
     r = requests.post(API_URL_HEROKU+'/teams/apps', headers=HEADERS_HEROKU, data=json.dumps( {'name': name, 'team': team} ))
@@ -242,8 +232,19 @@ def get_team_members( team_name ):
 
 # GitHub Related Functions #####################################################
 
+def get_download_url( repo, branch, token ):
+    # pulls the 302 location out of the redirect
+    download_url = API_URL_GITHUB+'/repos/'+repo+'/tarball/'+urllib.parse.quote(branch)+'?access_token='+token
+    try:
+        r = requests.get(download_url, allow_redirects=False)
+        if r.status_code == 302:
+            return r.headers['location']
+    except:
+        pass
+    return None
+
 def get_latest_commit_for_branch( repo, branch_name ):
-    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+branch_name, headers=HEADERS_GITHUB)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+urllib.parse.quote(branch_name), headers=HEADERS_GITHUB)
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
