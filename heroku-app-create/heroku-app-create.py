@@ -6,8 +6,7 @@ import requests
 import re
 import sys
 import time
-
-from urllib.parse import urlencode
+import urllib.parse
 
 # some constants
 TIMEOUT = 20
@@ -235,7 +234,7 @@ def get_team_members( team_name ):
 
 def get_download_url( repo, branch, token ):
     # pulls the 302 location out of the redirect
-    download_url = API_URL_GITHUB+'/repos/'+repo+'/tarball/'+urlencode(branch)+'?access_token='+token
+    download_url = API_URL_GITHUB+'/repos/'+repo+'/tarball/'+urllib.parse.quote(branch)+'?access_token='+token
     try:
         r = requests.get(download_url, allow_redirects=False)
         if r.status_code == 302:
@@ -245,7 +244,7 @@ def get_download_url( repo, branch, token ):
     return None
 
 def get_latest_commit_for_branch( repo, branch_name ):
-    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+urlencode(branch_name), headers=HEADERS_GITHUB)
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/branches/'+urllib.parse.quote(branch_name), headers=HEADERS_GITHUB)
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
