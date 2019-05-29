@@ -49,8 +49,8 @@ API_URL_GITHUB = 'https://api.github.com'
 def get_review_app_by_branch( pipeline_id, branch_name ):
     r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
     reviewapps = json.loads(r.text)
-    reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
     try:
+        reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
             return reviewapp
     except:
@@ -83,8 +83,8 @@ def delete_app_by_name( app_name ):
 def get_app_by_name( app_name ):
     r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
-    app = next((x for x in apps if x['name'] == app_name), None)
     try:
+        app = next((x for x in apps if x['name'] == app_name), None)
         if app is not None and 'id' in app:
             return app
     except:
@@ -94,8 +94,8 @@ def get_app_by_name( app_name ):
 def get_app_by_id( app_id ):
     r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
-    app = next((x for x in apps if x['id'] == app_id), None)
     try:
+        app = next((x for x in apps if x['id'] == app_id), None)
         if app is not None and 'id' in app:
             return app
     except:
@@ -109,11 +109,13 @@ def rename_app( app_id, app_name ):
 def get_pipeline_by_name( pipeline_name ):
     r = requests.get(API_URL_HEROKU+'/pipelines', headers=HEADERS_HEROKU)
     pipelines = json.loads(r.text)
-    pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
-    if pipeline is not None and 'id' in pipeline:
-        return pipeline
-    else:
-        return None
+    try:
+        pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
+        if pipeline is not None and 'id' in pipeline:
+            return pipeline
+    except:
+        pass
+    return None
 
 def create_team_app( name, team ):
     r = requests.post(API_URL_HEROKU+'/teams/apps', headers=HEADERS_HEROKU, data=json.dumps( {'name': name, 'team': team} ))
@@ -254,11 +256,14 @@ def get_latest_commit_for_branch( repo, branch_name ):
 def get_pr_name( repo, branch_name, page=1 ):
     r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
-    pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
-    if pr:
-        return pr
-    else:
-        return get_pr_name( repo, branch_name, page=page+1)
+    try:
+        pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
+        if pr:
+            return pr
+        else:
+            return get_pr_name( repo, branch_name, page=page+1)
+    except:
+        return None
 
 def add_pr_comment( repo, pr_id, message):
     payload = {
