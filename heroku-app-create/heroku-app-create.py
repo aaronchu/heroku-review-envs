@@ -60,7 +60,6 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
 def get_review_app_by_id( pipeline_id, id ):
     r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
     reviewapps = json.loads(r.text)
-    print(reviewapps)
     try:
         reviewapp = next((x for x in reviewapps if x['id'] == id), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
