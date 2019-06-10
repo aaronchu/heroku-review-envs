@@ -19,7 +19,7 @@ GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
 HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
 
 # invoke only when a label is added?
-REQUIRE_LABEL = True if os.environ['USE_LABEL'].lower() == 'true' else False
+REQUIRE_LABEL = (os.environ['USE_LABEL'].lower() == 'true')
 
 # basic headers for communicating with the Heroku API
 HEADERS_HEROKU = {
@@ -395,7 +395,7 @@ except:
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if ( REQUIRE_LABEL && LABEL_NAME not in pr_labels ) or pr_status == 'closed':
+if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
     if get_app_by_name( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
