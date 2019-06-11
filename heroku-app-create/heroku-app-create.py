@@ -6,6 +6,7 @@ import requests
 import re
 import sys
 import time
+import traceback
 import urllib.parse
 
 # some constants
@@ -53,8 +54,10 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
         reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
             return reviewapp
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+        sys.exit("Couldn't find a Review App for this pipeline @ branch - " + pipeline_id + '@' + branch_name)
     return None
 
 def get_review_app_by_id( pipeline_id, id ):
@@ -64,8 +67,9 @@ def get_review_app_by_id( pipeline_id, id ):
         reviewapp = next((x for x in reviewapps if x['id'] == id), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
             return reviewapp
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_app_setup_by_id( app_setup_id ):
@@ -87,8 +91,9 @@ def get_app_by_name( app_name ):
         app = next((x for x in apps if x['name'] == app_name), None)
         if app is not None and 'id' in app:
             return app
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_app_by_id( app_id ):
@@ -98,8 +103,9 @@ def get_app_by_id( app_id ):
         app = next((x for x in apps if x['id'] == app_id), None)
         if app is not None and 'id' in app:
             return app
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def rename_app( app_id, app_name ):
@@ -113,8 +119,9 @@ def get_pipeline_by_name( pipeline_name ):
         pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
         if pipeline is not None and 'id' in pipeline:
             return pipeline
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def create_team_app( name, team ):
@@ -183,8 +190,9 @@ def get_features_for_app( app_id ):
     try:
         if features[0]['id'] and features[0]['doc_url']:
             return features
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_config_vars_for_app( app_id ):
@@ -241,8 +249,9 @@ def get_download_url( repo, branch, token ):
         r = requests.get(download_url, allow_redirects=False)
         if r.status_code == 302:
             return r.headers['location']
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_latest_commit_for_branch( repo, branch_name ):
@@ -250,7 +259,9 @@ def get_latest_commit_for_branch( repo, branch_name ):
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
-    except:
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
         return None
 
 def get_pr_name( repo, branch_name, page=1 ):
@@ -262,7 +273,9 @@ def get_pr_name( repo, branch_name, page=1 ):
             return pr
         else:
             return get_pr_name( repo, branch_name, page=page+1)
-    except:
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
         return None
 
 def add_pr_comment( repo, pr_id, message):
@@ -381,6 +394,7 @@ try:
     print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 except Exception as ex:
     print(ex)
+    traceback.print_exc()
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
