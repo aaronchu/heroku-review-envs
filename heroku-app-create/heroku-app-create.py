@@ -395,7 +395,7 @@ try:
 except Exception as ex:
     print(ex)
     traceback.print_exc()
-    sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+    sys.exit("Couldn't find a PR for this branch - %s@%s" % (repo_origin, branch_origin))
 
 # determine the app_name
 app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
