@@ -391,7 +391,7 @@ try:
     pr_num = pr['number']
     pr_labels = [x['name'] for x in pr['labels']]
     pr_status = pr['state']
-    print ("Found Pull Request: \"%s\" id: %d" % (pr['title'], str(pr_num)))
+    print ("Found Pull Request: \"%s\" id: %d" % (pr['title'], pr_num))
 except Exception as ex:
     print(ex)
     traceback.print_exc()
