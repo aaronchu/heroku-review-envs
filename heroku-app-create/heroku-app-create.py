@@ -560,8 +560,9 @@ else:
 
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
+    print("Granting access to %d users..." % len(users))
     for email in [ x['email'] for x in users ]:
-        print(grant_review_app_access_to_user( app_name, email ))
+        grant_review_app_access_to_user( app_name, email )
 
 message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
 print (message)
