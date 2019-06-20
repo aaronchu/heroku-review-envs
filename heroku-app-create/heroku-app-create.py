@@ -492,7 +492,9 @@ else:
             print(json.dumps(response, sort_keys=True, indent=4))
             reviewapp_id = response['id']
             print ("Status is currently " + response['status'])
-        except:
+        except Exception as ex:
+            print(ex)
+            traceback.print_exc()
             sys.exit("Couldn't create ReviewApp.")
 
         # look up the app ID, wait for it to show up
