@@ -139,7 +139,8 @@ def create_app_setup( name, team, source_code_tgz_url, commit_sha, envs ):
         },
         'overrides': {
             'env': envs
-        }
+        },
+        'skip_rollback': True
     }
     print(json.dumps(payload, sort_keys=True, indent=4))
     r = requests.post(API_URL_HEROKU+'/app-setups', headers=HEADERS_HEROKU, data=json.dumps(payload))
