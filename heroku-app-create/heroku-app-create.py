@@ -19,7 +19,7 @@ GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
 HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
 
 # invoke only when a label is added?
-REQUIRE_LABEL = (os.environ['USE_LABEL'].lower() == 'true')
+REQUIRE_LABEL = (os.environ['USE_LABEL'].lower() == 'true') if 'USE_LABEL' in os.environ.keys() else False
 
 # basic headers for communicating with the Heroku API
 HEADERS_HEROKU = {
