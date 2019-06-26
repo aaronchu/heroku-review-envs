@@ -468,7 +468,8 @@ else:
                 'url': source_code_tgz,
                 'version': commit_sha,
             },
-            'environment': set_vars
+            'environment': set_vars,
+            'skip_rollback': True
         }
         print(json.dumps(payload, sort_keys=True, indent=4))
         try:
