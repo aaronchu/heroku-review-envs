@@ -18,6 +18,9 @@ GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
 HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
 
+# invoke only when a label is added?
+REQUIRE_LABEL = (os.environ['USE_LABEL'].lower() == 'true') if 'USE_LABEL' in os.environ.keys() else False
+
 # basic headers for communicating with the Heroku API
 HEADERS_HEROKU = {
     'Accept': 'application/vnd.heroku+json; version=3.review-apps',
@@ -393,14 +396,15 @@ except:
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if LABEL_NAME not in pr_labels or pr_status == 'closed':
+if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
     if get_app_by_name( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
     else:
-        # If nothing is spun up so far
-        print("To spin up a review environment, label your open pr with "+LABEL_NAME)
+        # If nothing is spun up so far, but labels are required
+        if REQUIRE_LABEL:
+            print("To spin up a review environment, label your open pr with "+LABEL_NAME)
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
