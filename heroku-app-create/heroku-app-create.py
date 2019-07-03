@@ -88,7 +88,7 @@ def get_app_by_name( app_name ):
     app = json.loads(r.text)
     print(json.dumps(app, sort_keys=True, indent=4))
     try:
-        if app is not None and 'id' in app:
+        if app is not None and 'name' in app:
             return app
     except:
         pass
