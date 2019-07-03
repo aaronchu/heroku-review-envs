@@ -95,9 +95,13 @@ app_prefix = args['APP_PREFIX']
 
 # look up the PR number for origin repo
 payload = None
+print( GITHUB_EVENT_PATH )
+if os.path.exists( GITHUB_EVENT_PATH ):
+    print( "%s exists." % GITHUB_EVENT_PATH)
 with open( GITHUB_EVENT_PATH, 'r' ) as payload_file:
-    print(payload_file.read())
-    payload = json.loads(payload_file.read())
+    payload_data = payload_file.read()
+    print(payload_data)
+    payload = json.loads(payload_data)
 if payload is None:
     sys.exit("Couldn't get the PR number for this PR.")
 pr_num = payload['number']
