@@ -98,7 +98,7 @@ payload = None
 print( GITHUB_EVENT_PATH )
 if os.path.exists( GITHUB_EVENT_PATH ):
     print( "%s exists." % GITHUB_EVENT_PATH)
-with open( GITHUB_EVENT_PATH, 'r' ) as payload_file:
+with open( GITHUB_EVENT_PATH, 'r', encoding="utf-8" ) as payload_file:
     payload_data = payload_file.read()
     print(payload_data)
     payload = json.loads(payload_data)
