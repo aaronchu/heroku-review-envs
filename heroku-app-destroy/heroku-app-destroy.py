@@ -6,6 +6,9 @@ import requests
 import re
 import sys
 
+# constants
+NEUTRAL_EXIT_CODE = 78
+
 # get the event payload
 GITHUB_EVENT_PATH = os.environ['GITHUB_EVENT_PATH']
 
@@ -95,15 +98,15 @@ app_prefix = args['APP_PREFIX']
 
 # look up the PR number for origin repo
 payload = None
-print( GITHUB_EVENT_PATH )
-if os.path.exists( GITHUB_EVENT_PATH ):
-    print( "%s exists." % GITHUB_EVENT_PATH)
 with open( GITHUB_EVENT_PATH, 'r', encoding="utf-8" ) as payload_file:
     payload_data = payload_file.read()
-    print(''.join( [c for c in payload_data if 0 < ord(c) < 127] ) )
     payload = json.loads(payload_data)
+    print( "GitHub Event Payload:" )
+    print(json.dumps(payload, sort_keys=True, indent=4))
 if payload is None:
-    sys.exit("Couldn't get the PR number for this PR.")
+    print( "Could not get GitHub Event Payload" )
+    # don't fail the action, as it'll cause the rest of the pipeline to be cancelled
+    sys.exit( NEUTRAL_EXIT_CODE )
 pr_num = payload['number']
 
 # determine the app_name
@@ -113,6 +116,7 @@ print ("App Name: "+app_name)
 
 result = delete_app_by_name( app_name )
 
+print ("Result of Deletion:" )
 print(json.dumps(result, sort_keys=True, indent=4))
 
 print ("Done.")
