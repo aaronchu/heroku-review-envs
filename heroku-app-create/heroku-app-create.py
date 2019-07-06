@@ -12,6 +12,7 @@ import urllib.parse
 TIMEOUT = 20
 APP_DOMAIN_SUFFIX = '.herokuapp.com'
 LABEL_NAME = 'review-env'
+PAGE_SIZE = 200
 
 # tokens
 GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
@@ -27,14 +28,14 @@ HEADERS_HEROKU = {
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json',
-    'Range': 'id ..; max=20;'
+    'Range': 'id ..; max=%d;' % PAGE_SIZE
     }
 HEADERS_HEROKU_REVIEW_PIPELINES = {
     'Accept': 'application/vnd.heroku+json; version=3.pipelines',
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json',
-    'Range': 'id ..; max=20;'
+    'Range': 'id ..; max=%d;' % PAGE_SIZE
     }
 
 API_URL_HEROKU = 'https://api.heroku.com'
@@ -229,11 +230,9 @@ def get_team_members( team_name ):
     return heroku_paginated_get_json_array( API_URL_HEROKU+'/teams/'+team_name+'/members', headers=HEADERS_HEROKU_REVIEW_PIPELINES )
 
 def heroku_paginated_get_json_array( url, **kwargs ):
-    print( "URL: %s (Range: %s)" % (url, kwargs['headers']['Range'] if 'Range' in kwargs['headers'] else '' ) )
+    print( "GET %s (Range: '%s')" % (url, kwargs['headers']['Range'] if 'Range' in kwargs['headers'] else '' ) )
     r = requests.get( url, **kwargs )
     results = json.loads(r.text)
-    print( "[%s] List segment:" % r.status_code )
-    print(json.dumps(results, sort_keys=True, indent=4))
 
     if r.status_code == 206:
         # recurse and return merged results
@@ -554,6 +553,7 @@ else:
 
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
+    print( "Found %s team members to grant access to." % len(users) )
     for email in [ x['email'] for x in users ]:
         grant_review_app_access_to_user( app_name, email )
 
