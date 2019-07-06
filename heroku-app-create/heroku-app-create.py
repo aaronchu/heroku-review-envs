@@ -232,7 +232,7 @@ def heroku_paginated_get_json_array( url, **kwargs ):
     print( "URL: %s (Range: %s)" % (url, kwargs['headers']['Range'] if 'Range' in kwargs['headers'] else '' ) )
     r = requests.get( url, **kwargs )
     results = json.loads(r.text) 
-    if r.status == 206:
+    if r.status_code == 206:
         # recurse and return merged results
         kwargs['headers']['Range'] = r.headers['Next-Range']
         return results + heroku_paginated_get_json_array( url, **kwargs )
