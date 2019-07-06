@@ -27,14 +27,14 @@ HEADERS_HEROKU = {
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json',
-    'Range': 'max=20'
+    'Range': 'id ..; max=20;'
     }
 HEADERS_HEROKU_REVIEW_PIPELINES = {
     'Accept': 'application/vnd.heroku+json; version=3.pipelines',
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
     'Content-Type': 'application/json',
-    'Range': 'max=20'
+    'Range': 'id ..; max=20;'
     }
 
 API_URL_HEROKU = 'https://api.heroku.com'
