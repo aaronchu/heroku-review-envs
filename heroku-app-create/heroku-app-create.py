@@ -12,6 +12,7 @@ import urllib.parse
 TIMEOUT = 20
 APP_DOMAIN_SUFFIX = '.herokuapp.com'
 LABEL_NAME = 'review-env'
+PAGE_SIZE = 200
 
 # tokens
 GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
@@ -26,13 +27,15 @@ HEADERS_HEROKU = {
     'Accept': 'application/vnd.heroku+json; version=3.review-apps',
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Range': 'id ..; max=%d;' % PAGE_SIZE
     }
 HEADERS_HEROKU_REVIEW_PIPELINES = {
     'Accept': 'application/vnd.heroku+json; version=3.pipelines',
     'Authorization': 'Bearer %s' % HEROKU_TOKEN,
     'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Range': 'id ..; max=%d;' % PAGE_SIZE
     }
 
 API_URL_HEROKU = 'https://api.heroku.com'
@@ -50,8 +53,7 @@ API_URL_GITHUB = 'https://api.github.com'
 
 
 def get_review_app_by_branch( pipeline_id, branch_name ):
-    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
-    reviewapps = json.loads(r.text)
+    reviewapps = heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU )
     reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
     try:
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
@@ -61,8 +63,7 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     return None
 
 def get_review_app_by_id( pipeline_id, id ):
-    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU)
-    reviewapps = json.loads(r.text)
+    reviewapps = heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU )
     reviewapp = next((x for x in reviewapps if x['id'] == id), None)
     try:
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
@@ -83,7 +84,7 @@ def delete_app_by_name( app_name ):
     response = json.loads(r.text)
     return response
 
-def get_app_by_name( app_name ):
+def get_app_by_name_or_id( app_name ):
     r = requests.get(API_URL_HEROKU+'/apps/'+app_name, headers=HEADERS_HEROKU)
     app = json.loads(r.text)
     print(json.dumps(app, sort_keys=True, indent=4))
@@ -190,9 +191,7 @@ def get_features_for_app( app_id ):
     return None
 
 def get_config_vars_for_app( app_id ):
-    r = requests.get(API_URL_HEROKU+'/apps/'+app_id+'/config-vars', headers=HEADERS_HEROKU)
-    config_vars = json.loads(r.text)
-    return config_vars
+    return heroku_paginated_get_json_array( API_URL_HEROKU+'/apps/'+app_id+'/config-vars', headers=HEADERS_HEROKU )
 
 def set_config_vars_for_app( app_id, config_vars ):
     r = requests.patch(API_URL_HEROKU+'/apps/'+app_id+'/config-vars', headers=HEADERS_HEROKU, data=json.dumps(config_vars))
@@ -216,9 +215,7 @@ def add_buildpacks_to_app( app_id, buildpack_urls ):
     return result
 
 def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
-    r = requests.get(API_URL_HEROKU+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
-    config_vars = json.loads(r.text)
-    return config_vars
+    return heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=HEADERS_HEROKU_REVIEW_PIPELINES )
 
 def grant_review_app_access_to_user( app_name, email ):
     payload = {
@@ -230,9 +227,18 @@ def grant_review_app_access_to_user( app_name, email ):
     return json.loads(r.text)
 
 def get_team_members( team_name ):
-    r = requests.get(API_URL_HEROKU+'/teams/'+team_name+'/members', headers=HEADERS_HEROKU_REVIEW_PIPELINES)
-    team_members = json.loads(r.text)
-    return team_members
+    return heroku_paginated_get_json_array( API_URL_HEROKU+'/teams/'+team_name+'/members', headers=HEADERS_HEROKU_REVIEW_PIPELINES )
+
+def heroku_paginated_get_json_array( url, **kwargs ):
+    print( "GET %s (Range: '%s')" % (url, kwargs['headers']['Range'] if 'Range' in kwargs['headers'] else '' ) )
+    r = requests.get( url, **kwargs )
+    results = json.loads(r.text)
+
+    if r.status_code == 206:
+        # recurse and return merged results
+        kwargs['headers']['Range'] = r.headers['Next-Range']
+        return results + heroku_paginated_get_json_array( url, **kwargs )
+    return results
 
 # GitHub Related Functions #####################################################
 
@@ -397,7 +403,7 @@ except:
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
 if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
-    if get_app_by_name( app_name ):
+    if get_app_by_name_or_id( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
@@ -410,7 +416,7 @@ if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
 # START CREATING/DEPLOYING #####################################################
 
 # see if there's a review app for this branch already
-reviewapp = get_app_by_name( app_name )
+reviewapp = get_app_by_name_or_id( app_name )
 
 # if it wasn't found, try to use an existing review app if it already exists
 if reviewapp is None and app_origin == app_short_name:
@@ -547,6 +553,7 @@ else:
 
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
+    print( "Found %s team members to grant access to." % len(users) )
     for email in [ x['email'] for x in users ]:
         grant_review_app_access_to_user( app_name, email )
 
