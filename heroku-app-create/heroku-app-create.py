@@ -265,6 +265,10 @@ def get_pr_name( repo, branch_name, page=1 ):
     r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
     pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
+    print( "looking for branch name: %s" % branch_name )
+    print( "existing branch names:" )
+    for p in prs:
+        print( "  - %s" % p['head']['ref'] )
     if pr:
         return pr
     else:
