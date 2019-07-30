@@ -8,7 +8,7 @@ import sys
 import time
 
 # some constants
-LABEL_NAME = 'review-env'
+NEUTRAL_EXIT_CODE = 78
 
 # tokens
 HEROKU_TOKEN = os.environ['HEROKU_API_TOKEN']
@@ -157,7 +157,8 @@ args_or_envs = [
     'APP_NAME',
     'RELATED_APPS',
     'ADDON_PLAN',
-    'ADDON_NAME'
+    'ADDON_NAME',
+    'REQUIRE_LABEL'
 ]
 for i in args_or_envs:
     if i not in args and i in os.environ:
@@ -186,6 +187,9 @@ app_prefix = args['APP_PREFIX']
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
+# Require a pull request label to be present
+require_label = args['REQUIRE_LABEL'] if 'REQUIRE_LABEL' in args.keys() else False
+
 # we are always deploying this using information from the origin app
 repo = repo_origin
 branch = branch_origin
@@ -208,16 +212,20 @@ except Exception as ex:
     print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
+# check required PR label
+print ("Detected Labels: " + ', '.join(pr_labels))
+if require_label:
+    print ("Required Labels: " + require_label)
+    if require_label not in pr_labels:
+        print ("To spin up this add-on, label your pr with "+require_label)
+        sys.exit( NEUTRAL_EXIT_CODE )
+else:
+    print ("Skipping label check")
+
 # determine the app_name
 app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
 
 print ("App Name: "+app_name)
-
-# if this is not a labelled PR
-print ("Detected Labels: " + ', '.join(pr_labels))
-if LABEL_NAME not in pr_labels or pr_status == 'closed':
-    print("To spin up a review environment, label your open pr with "+LABEL_NAME)
-    sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
 

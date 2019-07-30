@@ -34,7 +34,8 @@ action "create-kafka" {
     "ADDON_NAME=KAFKA",
     "RELATED_APPS=relatedapp,relatedapp2",
     "ADDON_PLAN=heroku-kafka:basic-0"
-    ]
+    "REQUIRE_LABEL=kafka"
+  ]
 }
 
 action "create-trr-website" {
@@ -61,6 +62,7 @@ In order to supply arguments to this action, use a format similar to environment
 * `RELATED_APPS` - **Required.** Other Apps in the Review Environment to attach this addon to.
 * `ADDON_PLAN` - **Required.** The Heroku Addon Plan to use, for example: `heroku-kafka:basic-0`.
 * `ADDON_NAME` - **Required.** The name of the attachment of this Heroku Addon. This action will not add another addon if one with this name is detected on the Originating App.
+* `REQUIRE_LABEL` - **Optional.** The name of the required label that should be set in the PR.
 
 ## How Heroku App Names Are Generated
 
