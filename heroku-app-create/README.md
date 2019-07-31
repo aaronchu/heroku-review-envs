@@ -21,7 +21,7 @@ action "create-myapp" {
     "HEROKU_API_TOKEN",
     "GITHUB_TOKEN",
     "GHA_USER_TOKEN"
-    ]
+  ]
   args = [
     "APP_PREFIX=myorg",
     "HEROKU_TEAM_NAME=myorganization",
