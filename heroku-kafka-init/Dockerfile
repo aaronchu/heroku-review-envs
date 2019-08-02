@@ -15,7 +15,7 @@ RUN \
   curl https://cli-assets.heroku.com/install.sh | sh && \
   heroku plugins:install heroku-kafka
 
-ENV PATH="/opt/gtk/bin:$(yarn global bin)"
+ENV PATH="$PATH:$(yarn global bin)"
 
 ADD entrypoint.sh /entrypoint.sh
 
