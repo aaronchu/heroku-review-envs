@@ -9,14 +9,13 @@ LABEL "repository"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "homepage"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
+ENV PATH="$PATH:/usr/local/bin:$(yarn global bin)"
+
 RUN \
   apt-get update && \
   apt-get install -y curl jq && \
   curl https://cli-assets.heroku.com/install.sh | sh && \
-  heroku plugins:install heroku-kafka && \
-  heroku plugins:link
-
-ENV PATH="$PATH:$(yarn global bin)"
+  heroku plugins:install heroku-kafka
 
 ADD entrypoint.sh /entrypoint.sh
 
