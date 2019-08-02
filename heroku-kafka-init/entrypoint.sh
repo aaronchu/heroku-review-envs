@@ -3,8 +3,6 @@
 set -e
 sh -c "$*"
 
-sleep 10
-
 echo "machine api.heroku.com
   login $HEROKU_USER_EMAIL
   password $HEROKU_API_TOKEN
