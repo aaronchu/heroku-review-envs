@@ -1,4 +1,4 @@
-FROM debian:9.5-slim
+FROM node:10.16.1-slim
 
 LABEL "com.github.actions.name"="Heroku Kafka Init"
 LABEL "com.github.actions.description"="Creates topics and consumer groups for a Kafka add-on"
