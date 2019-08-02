@@ -13,7 +13,8 @@ RUN \
   apt-get update && \
   apt-get install -y curl jq && \
   curl https://cli-assets.heroku.com/install.sh | sh && \
-  heroku plugins:install heroku-kafka
+  heroku plugins:install heroku-kafka && \
+  heroku plugins:link
 
 ENV PATH="$PATH:$(yarn global bin)"
 
