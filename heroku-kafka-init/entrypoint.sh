@@ -11,7 +11,7 @@ machine git.heroku.com
   password $HEROKU_API_TOKEN
 " >> ~/.netrc
 
-PR_NUMBER=jq '.pull_request.number' $GITHUB_EVENT_PATH
+PR_NUMBER=$(jq '.pull_request.number' $GITHUB_EVENT_PATH)
 HEROKU_APP_NAME="${APP_PREFIX}-${APP_NAME}-pr-${PR_NUMBER}"
 
 for CGROUP in `cat kafka.cgroups`
