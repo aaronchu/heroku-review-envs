@@ -3,6 +3,8 @@
 set -e
 sh -c "$*"
 
+sleep 10
+
 echo "machine api.heroku.com
   login $HEROKU_USER_EMAIL
   password $HEROKU_API_TOKEN
@@ -13,6 +15,9 @@ machine git.heroku.com
 
 PR_NUMBER=$(jq '.pull_request.number' $GITHUB_EVENT_PATH)
 HEROKU_APP_NAME="${APP_PREFIX}-${APP_NAME}-pr-${PR_NUMBER}"
+
+heroku ps -a $HEROKU_APP_NAME
+heroku plugins
 
 for CGROUP in `cat kafka.cgroups`
 do
