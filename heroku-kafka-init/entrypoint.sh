@@ -3,10 +3,6 @@
 set -e
 sh -c "$*"
 
-heroku plugins:install heroku-kafka
-
-sleep 10
-
 echo "machine api.heroku.com
   login $HEROKU_USER_EMAIL
   password $HEROKU_API_TOKEN

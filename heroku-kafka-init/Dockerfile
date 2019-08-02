@@ -14,6 +14,7 @@ RUN \
   apt-get install -y curl
 
 RUN curl https://cli-assets.heroku.com/install.sh | sh
+RUN heroku plugins:install heroku-kafka | sh
 
 ADD entrypoint.sh /entrypoint.sh
 
