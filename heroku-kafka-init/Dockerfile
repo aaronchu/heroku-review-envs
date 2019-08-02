@@ -9,11 +9,10 @@ LABEL "repository"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "homepage"="http://github.com/TheRealReal/heroku-review-envs"
 LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
-ENV PATH="$PATH:/usr/local/bin:$(yarn global bin)"
-
 RUN \
   apt-get update && \
   apt-get install -y curl jq && \
+  rm -rf /var/lib/apt/lists/* && \
   curl https://cli-assets.heroku.com/install.sh | sh && \
   heroku plugins:install heroku-kafka
 

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -e
 sh -c "$*"
 
 echo "machine api.heroku.com
