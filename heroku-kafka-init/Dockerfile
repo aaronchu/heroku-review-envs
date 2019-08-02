@@ -11,10 +11,9 @@ LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
 RUN \
   apt-get update && \
-  apt-get install -y curl
-
-RUN curl https://cli-assets.heroku.com/install.sh | sh
-RUN heroku plugins:install heroku-kafka
+  apt-get install -y curl && \
+  curl https://cli-assets.heroku.com/install.sh | sh && \
+  heroku plugins:install heroku-Kafka
 
 ADD entrypoint.sh /entrypoint.sh
 
