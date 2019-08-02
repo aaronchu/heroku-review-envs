@@ -13,7 +13,7 @@ RUN \
   apt-get update && \
   apt-get install -y curl jq && \
   curl https://cli-assets.heroku.com/install.sh | sh && \
-  heroku plugins:install heroku-Kafka
+  heroku plugins:install heroku-kafka
 
 ADD entrypoint.sh /entrypoint.sh
 
