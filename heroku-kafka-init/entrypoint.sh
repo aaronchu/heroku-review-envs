@@ -3,6 +3,9 @@
 set -e
 sh -c "$*"
 
+
+cat $GITHUB_EVENT_PATH
+
 echo "machine api.heroku.com
   login $HEROKU_USER_EMAIL
   password $HEROKU_API_TOKEN
