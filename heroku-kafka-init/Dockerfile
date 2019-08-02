@@ -11,7 +11,7 @@ LABEL "maintainer"="The RealReal DevOps <devops@therealreal.com>"
 
 RUN \
   apt-get update && \
-  apt-get install -y curl && \
+  apt-get install -y curl jq && \
   curl https://cli-assets.heroku.com/install.sh | sh && \
   heroku plugins:install heroku-Kafka
 
