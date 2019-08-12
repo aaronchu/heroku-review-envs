@@ -433,6 +433,8 @@ app_id = None
 if reviewapp is not None:
     app_id = reviewapp['id']
     print ("Found reviewapp id: " + app_id )
+    print(json.dumps(reviewapp, sort_keys=True, indent=4))
+    
     # Originating App - doesn't need to be deployed because Review Apps Beta
     #   automatically deploys on push to the PR.
     # Related App - we do not deploy here b/c we don't want to disrupt the state
