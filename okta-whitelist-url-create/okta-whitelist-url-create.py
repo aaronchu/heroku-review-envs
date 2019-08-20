@@ -5,20 +5,27 @@ import os
 import requests
 import sys
 
-# some constants
-TIMEOUT = 20
-
 # tokens
 OKTA_API_TOKEN = os.environ['OKTA_API_TOKEN']
-OKTA_CLIENT_ID = os.environ['OKTA_CLIENT_ID']
+GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
 
-# basic headers for communicating with the GitHub API
+# basic headers for communicating with the Okta API
 HEADERS_OKTA = {
     'Accept': 'application/json',
     'Authorization': 'SSWS %s' % OKTA_API_TOKEN,
     'Content-Type': 'application/json'
     }
+OKTA_CLIENT_ID = os.environ['OKTA_CLIENT_ID']
 API_URL_OKTA = 'https://therealreal.oktapreview.com/oauth2/v1/clients/%s' % OKTA_CLIENT_ID
+
+# basic headers for communicating with the GitHub API
+HEADERS_GITHUB = {
+    'Accept': 'application/vnd.github.v3+json',
+    'Authorization': 'token %s' % GHA_USER_TOKEN,
+    'User-Agent': 'Heroku GitHub Actions Provider by TheRealReal',
+    'Content-Type': 'application/json'
+    }
+API_URL_GITHUB = 'https://api.github.com'
 
 # Placeholder const for the actual URI to add
 REVIEW_ENV_URI = 'https://trr-web-pr-123456.herokuapp.com/admin/okta'
@@ -34,6 +41,17 @@ def get_app_name( svc_origin, svc_name, pr_num, prefix ):
         name = "%s-%s-pr-%s" % ( prefix, svc_origin, pr_num )
     # truncate to 30 chars for Heroku
     return name[:30]
+
+# GitHub Related Functions #####################################################
+
+def get_pr_name( repo, branch_name, page=1 ):
+    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
+    prs = json.loads(r.text)
+    pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
+    if pr:
+        return pr
+    else:
+        return get_pr_name( repo, branch_name, page=page+1)
 
 # PROCESS ENV and ARGS #########################################################
 
@@ -106,6 +124,24 @@ github_org = repo.split('/')[0]
 print ("GitHub Org: "+github_org)
 print ("Repo: "+repo)
 print ("Branch to deploy: "+branch)
+
+# DETERMINE THE APP NAME #######################################################
+
+# look up the PR number for origin repo
+try:
+    pr = get_pr_name( repo_origin, branch_origin )
+    pr_num = pr['number']
+    pr_labels = [x['name'] for x in pr['labels']]
+    pr_status = pr['state']
+    print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
+except Exception as ex:
+    print(ex)
+    sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+
+# determine the app_name
+app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
+
+print ("App Name: "+app_name)
 
 # START UPDATING WHITELIST #####################################################
 
