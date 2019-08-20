@@ -20,7 +20,7 @@ HEADERS_OKTA = {
 API_URL_OKTA = 'https://therealreal.oktapreview.com/oauth2/v1/clients/%s' % OKTA_CLIENT_ID
 
 # Placeholder const for the actual URI to add
-REVIEW_ENV_URI = 'https://trr-web-pr-12345.herokuapp.com/admin/okta'
+REVIEW_ENV_URI = 'https://trr-web-pr-123456.herokuapp.com/admin/okta'
 
 print ("Starint Okta Whitelist URL Create")
 
