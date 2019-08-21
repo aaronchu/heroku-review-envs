@@ -15,9 +15,6 @@ HEADERS_OKTA = {
     'Authorization': 'SSWS %s' % OKTA_API_TOKEN,
     'Content-Type': 'application/json'
     }
-OKTA_CLIENT_ID = os.environ['OKTA_CLIENT_ID']
-OKTA_BASE_URL = os.environ['OKTA_BASE_URL']
-API_URL_OKTA = 'https://%s/oauth2/v1/clients/%s' % ( OKTA_BASE_URL, OKTA_CLIENT_ID )
 
 # basic headers for communicating with the GitHub API
 HEADERS_GITHUB = {
@@ -94,6 +91,11 @@ app_prefix = args['APP_PREFIX']
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
+# set the Okta Auth Server URL
+okta_client_id = args['OKTA_CLIENT_ID']
+okta_base_url = args['OKTA_BASE_URL']
+api_url_okta = 'https://%s/oauth2/v1/clients/%s' % ( okta_base_url, okta_client_id )
+
 # DETERMINE THE APP NAME #######################################################
 
 # look up the PR number for origin repo
@@ -118,7 +120,7 @@ print ("Starint Okta Whitelist URL Destroy")
 
 uri_to_remove = "https://" + app_name + ".herokuapp.com/admin/okta"
 
-r = requests.get(API_URL_OKTA, headers=HEADERS_OKTA)
+r = requests.get(api_url_okta, headers=HEADERS_OKTA)
 client = json.loads(r.text)
 
 redirect_uris = client['redirect_uris']
@@ -129,7 +131,7 @@ if any(uri_to_remove in s for s in redirect_uris):
   del client['client_secret_expires_at']
   del client['client_id_issued_at']
 
-  r2 = requests.put(API_URL_OKTA, headers=HEADERS_OKTA, data=json.dumps(client))
+  r2 = requests.put(api_url_okta, headers=HEADERS_OKTA, data=json.dumps(client))
 
   if r2.status_code == 200:
     print ('The URI %s has been removed from the whitelist!' % uri_to_remove)

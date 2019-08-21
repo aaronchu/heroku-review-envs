@@ -16,12 +16,12 @@ action "create-okta-whitelist" {
   needs = "Deploy Review Environment if Branch Modified"
   secrets = [
     "OKTA_API_TOKEN",
-    "OKTA_CLIENT_ID",
-    "OKTA_BASE_URL",
     "GHA_USER_TOKEN"]
   args = [
     "APP_PREFIX=myorg",
     "APP_ORIGIN=myapp",
+    "OKTA_CLIENT_ID=my-okta-client-id",
+    "OKTA_BASE_URL=myorg.oktapreview.com"
   ]
 }
 ```
@@ -34,12 +34,12 @@ action "create-okta-whitelist" {
   needs = "Deploy Review Environment if Branch Modified"
   secrets = [
     "OKTA_API_TOKEN",
-    "OKTA_CLIENT_ID",
-    "OKTA_BASE_URL",
     "GHA_USER_TOKEN"]
   args = [
     "APP_PREFIX=myorg",
     "APP_ORIGIN=myrelatedapp",
+    "OKTA_CLIENT_ID=my-okta-client-id",
+    "OKTA_BASE_URL=myorg.oktapreview.com"
   ]
 }
 ```
@@ -47,13 +47,13 @@ action "create-okta-whitelist" {
 ## Secrets
 
 * `OKTA_API_TOKEN` - **Required.** Token for communication with Okta API.
-* `OKTA_CLIENT_ID` - **Required.** The ID that specifies the Admin Application in our Okta sandbox.
-* `OKTA_BASE_URL`  - **Required.** The Base URL for the Okta Authorization Server
 * `GHA_USER_TOKEN` - **Required.** Token for communication with GitHub API.
 
 ## Arguments
 
 In order to supply arguments to this action, use a format similar to environment variable definitions - as shown above in the examples.
 
-* `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
-* `APP_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
+* `APP_PREFIX`     - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
+* `APP_ORIGIN`     - **Optional.** The name of the Development App. Define if you're deploying a Related App.
+* `OKTA_CLIENT_ID` - **Required.** The ID that specifies the Admin Application in our Okta sandbox.
+* `OKTA_BASE_URL`  - **Required.** The Base URL for the Okta Authorization Server
