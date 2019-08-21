@@ -8,38 +8,38 @@ This GitHub action will remove a review environment from the Okta whitelist so t
 
 ## Usage
 
-Example usage when deploying a `real-server` App:
+Example usage when deploying a Development App:
 
 ```
 action "Destroy okta-whitelist" {
   needs = "Delete Review Env if PR Closed"
-  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-destroy@master"
+  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-destroy"
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
     "GHA_USER_TOKEN"
   ]
   args = [
-    "APP_PREFIX=trr",
-    "APP_ORIGIN=web",
+    "APP_PREFIX=myorg",
+    "APP_ORIGIN=myapp",
   ]
 }
 ```
 
-Example usage when deploying a `api`, `api-gateway`, or `website` App:
+Example usage when deploying a Related App:
 
 ```
 action "Destroy okta-whitelist" {
   needs = "Delete Review Env if PR Closed"
-  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-destroy@master"
+  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-destroy"
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
     "GHA_USER_TOKEN"
   ]
   args = [
-    "APP_PREFIX=trr",
-    "APP_ORIGIN=api",
+    "APP_PREFIX=myorg",
+    "APP_ORIGIN=myrelatedapp",
   ]
 }
 ```

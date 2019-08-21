@@ -8,36 +8,36 @@ This GitHub action will whitelist a review environment with Okta so that it can 
 
 ## Usage
 
-Example usage when deploying a `real-server` App:
+Example usage when deploying a Development App:
 
 ```
 action "create-okta-whitelist" {
-  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-create@master"
+  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-create"
   needs = "Deploy Review Environment if Branch Modified"
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
     "GHA_USER_TOKEN"]
   args = [
-    "APP_PREFIX=trr",
-    "APP_ORIGIN=web",
+    "APP_PREFIX=myorg",
+    "APP_ORIGIN=myapp",
   ]
 }
 ```
 
-Example usage when deploying a `api`, `api-gateway`, or `website` App:
+Example usage when deploying a Related App:
 
 ```
 action "create-okta-whitelist" {
-  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-create@master"
+  uses = "TheRealReal/heroku-review-envs/okta-whitelist-url-create"
   needs = "Deploy Review Environment if Branch Modified"
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
     "GHA_USER_TOKEN"]
   args = [
-    "APP_PREFIX=trr",
-    "APP_ORIGIN=api",
+    "APP_PREFIX=myorg",
+    "APP_ORIGIN=myrelatedapp",
   ]
 }
 ```
