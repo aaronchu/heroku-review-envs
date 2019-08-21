@@ -29,13 +29,11 @@ API_URL_GITHUB = 'https://api.github.com'
 
 # Non-API-Related Functions ####################################################
 
-def get_app_name( svc_origin, svc_name, pr_num, prefix ):
-    if svc_origin != svc_name:
-        # if related app, we append the app name
-        name = "%s-%s-pr-%s-%s" % ( prefix, svc_origin, pr_num, svc_name )
+def get_app_name( svc_origin, pr_num, prefix ):
+    if svc_origin == 'web':
+      name = "%s-%s-pr-%s" % ( prefix, svc_origin, pr_num )
     else:
-        # if this is the originating app, just name it like vanilla review apps
-        name = "%s-%s-pr-%s" % ( prefix, svc_origin, pr_num )
+      name = "%s-%s-pr-%s-web" % ( prefix, svc_origin, pr_num )
     # truncate to 30 chars for Heroku
     return name[:30]
 
@@ -73,7 +71,6 @@ for arg in sys.argv:
 # for quick testing, we want these to be alternatively passed in via environment
 args_or_envs = [
     'APP_PREFIX',
-    'APP_NAME',
     'APP_ORIGIN'
 ]
 for i in args_or_envs:
@@ -84,43 +81,17 @@ print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not 
 
 # GET THE INPUTS SET UP RIGHT ##################################################
 
-# determine the app_short_name - short name that references the type of service
-app_short_name = args['APP_NAME']
-print ("Service Name: "+app_short_name)
-
-# if this APP_ORIGIN is not specified, then we are deploying the originating
-# service. Fill in the value of this var just for ease of use.
-app_origin = app_short_name
-if 'APP_ORIGIN' in args:
-    app_origin = args['APP_ORIGIN']
+app_origin = args['APP_ORIGIN']
 print("Originating Service: "+app_origin)
 
 # pull branch name from the GITHUB_REF
 branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
-commit_sha = os.environ['GITHUB_SHA']
-origin_commit_sha = commit_sha
 
 # set the app name prefix properly
 app_prefix = args['APP_PREFIX']
 
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
-
-# are we deploying the originating app, or a related app?
-if app_origin == app_short_name:
-    # originating app
-    repo = repo_origin
-    branch = branch_origin
-else:
-    # related app
-    repo = args['REPO']
-    branch = args['BRANCH']
-    commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
-
-github_org = repo.split('/')[0]
-print ("GitHub Org: "+github_org)
-print ("Repo: "+repo)
-print ("Branch to deploy: "+branch)
 
 # DETERMINE THE APP NAME #######################################################
 
@@ -136,13 +107,13 @@ except Exception as ex:
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
-app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
+app_name = get_app_name( app_origin, pr_num, app_prefix )
 
-print ("App Name: "+app_name)
+print ("App Name: " + app_name)
 
 # START UPDATING WHITELIST #####################################################
 
-print ("Starint Okta Whitelist URL Create")
+print ("Staring Okta Whitelist URL Create")
 
 uri_to_add = "https://" + app_name + ".herokuapp.com/admin/okta"
 
