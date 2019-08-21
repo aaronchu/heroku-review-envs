@@ -16,7 +16,8 @@ HEADERS_OKTA = {
     'Content-Type': 'application/json'
     }
 OKTA_CLIENT_ID = os.environ['OKTA_CLIENT_ID']
-API_URL_OKTA = 'https://therealreal.oktapreview.com/oauth2/v1/clients/%s' % OKTA_CLIENT_ID
+OKTA_BASE_URL = os.environ['OKTA_BASE_URL']
+API_URL_OKTA = 'https://%s/oauth2/v1/clients/%s' % ( OKTA_BASE_URL, OKTA_CLIENT_ID )
 
 # basic headers for communicating with the GitHub API
 HEADERS_GITHUB = {

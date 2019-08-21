@@ -17,6 +17,7 @@ action "Destroy okta-whitelist" {
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
+    "OKTA_BASE_URL",
     "GHA_USER_TOKEN"
   ]
   args = [
@@ -35,6 +36,7 @@ action "Destroy okta-whitelist" {
   secrets = [
     "OKTA_API_TOKEN",
     "OKTA_CLIENT_ID",
+    "OKTA_BASE_URL",
     "GHA_USER_TOKEN"
   ]
   args = [
@@ -48,6 +50,7 @@ action "Destroy okta-whitelist" {
 
 * `OKTA_API_TOKEN` - **Required.** Token for communication with Okta API.
 * `OKTA_CLIENT_ID` - **Required.** The ID that specifies the Admin Application in our Okta sandbox.
+* `OKTA_BASE_URL`  - **Required.** The Base URL for the Okta Authorization Server
 * `GHA_USER_TOKEN` - **Required.** Token for communication with GitHub API.
 
 ## Arguments
