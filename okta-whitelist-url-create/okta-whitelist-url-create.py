@@ -27,9 +27,6 @@ HEADERS_GITHUB = {
     }
 API_URL_GITHUB = 'https://api.github.com'
 
-# Placeholder const for the actual URI to add
-REVIEW_ENV_URI = 'https://trr-web-pr-123456.herokuapp.com/admin/okta'
-
 # Non-API-Related Functions ####################################################
 
 def get_app_name( svc_origin, svc_name, pr_num, prefix ):
@@ -147,22 +144,24 @@ print ("App Name: "+app_name)
 
 print ("Starint Okta Whitelist URL Create")
 
+uri_to_add = "https://" + app_name + ".herokuapp.com/admin/okta"
+
 r = requests.get(API_URL_OKTA, headers=HEADERS_OKTA)
 client = json.loads(r.text)
 
 redirect_uris = client['redirect_uris']
 
-if not any(REVIEW_ENV_URI in s for s in redirect_uris):
-  print ('The URI %s is NOT whitelisted. Adding it to the whitelist now!' % REVIEW_ENV_URI)
-  redirect_uris.append(REVIEW_ENV_URI)
+if not any(uri_to_add in s for s in redirect_uris):
+  print ('The URI %s is NOT whitelisted. Adding it to the whitelist now!' % uri_to_add)
+  redirect_uris.append(uri_to_add)
   del client['client_secret_expires_at']
   del client['client_id_issued_at']
 
   r2 = requests.put(API_URL_OKTA, headers=HEADERS_OKTA, data=json.dumps(client))
 
   if r2.status_code == 200:
-    print ('The URI %s has been added to the whitelist!' % REVIEW_ENV_URI)
+    print ('The URI %s has been added to the whitelist!' % uri_to_add)
   else:
     print ('There was a problem adding the URI %s to the whitelist. Please investigate.')
 else:
-  print ('The URI %s is already whitelisted' % REVIEW_ENV_URI)
+  print ('The URI %s is already whitelisted' % uri_to_add)
