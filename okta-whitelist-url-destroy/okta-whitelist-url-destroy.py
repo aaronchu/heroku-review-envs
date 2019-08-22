@@ -27,11 +27,11 @@ API_URL_GITHUB = 'https://api.github.com'
 
 # Non-API-Related Functions ####################################################
 
-def get_app_name( svc_origin, pr_num, prefix ):
-    if svc_origin == 'web':
+def get_app_name( svc_origin, svc_target, pr_num, prefix ):
+    if svc_origin == svc_target:
       name = "%s-%s-pr-%s" % ( prefix, svc_origin, pr_num )
     else:
-      name = "%s-%s-pr-%s-web" % ( prefix, svc_origin, pr_num )
+      name = "%s-%s-pr-%s-%s" % ( prefix, svc_origin, pr_num, svc_target )
     # truncate to 30 chars for Heroku
     return name[:30]
 
@@ -85,6 +85,9 @@ print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not 
 app_origin = args['APP_ORIGIN']
 print("Originating Service: "+app_origin)
 
+app_target = args['APP_TARGET']
+print("Target Service: "+app_target)
+
 # pull branch name from the GITHUB_REF
 branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
 
@@ -111,7 +114,7 @@ except Exception as ex:
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 # determine the app_name
-app_name = get_app_name( app_origin, pr_num, app_prefix )
+app_name = get_app_name( app_origin, app_target, pr_num, app_prefix )
 
 print ("App Name: " + app_name)
 
