@@ -69,7 +69,10 @@ for arg in sys.argv:
 # for quick testing, we want these to be alternatively passed in via environment
 args_or_envs = [
     'APP_PREFIX',
-    'APP_ORIGIN'
+    'APP_ORIGIN',
+    'APP_TARGET',
+    'URL_TARGET',
+    'OKTA_API_URL'
 ]
 for i in args_or_envs:
     if i not in args and i in os.environ:
