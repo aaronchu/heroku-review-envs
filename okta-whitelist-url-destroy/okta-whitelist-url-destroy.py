@@ -91,10 +91,8 @@ app_prefix = args['APP_PREFIX']
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
 
-# set the Okta Auth Server URL
-okta_client_id = args['OKTA_CLIENT_ID']
-okta_base_url = args['OKTA_BASE_URL']
-api_url_okta = 'https://%s/oauth2/v1/clients/%s' % ( okta_base_url, okta_client_id )
+# set the Okta API URL
+api_url_okta = args['OKTA_API_URL']
 
 # DETERMINE THE APP NAME #######################################################
 
@@ -118,7 +116,7 @@ print ("App Name: " + app_name)
 
 print ("Starint Okta Whitelist URL Destroy")
 
-uri_to_remove = "https://" + app_name + ".herokuapp.com/admin/okta"
+uri_to_remove = args['URL_TARGET'] % app_name
 
 r = requests.get(api_url_okta, headers=HEADERS_OKTA)
 client = json.loads(r.text)
