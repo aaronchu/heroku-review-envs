@@ -20,8 +20,9 @@ action "create-okta-whitelist" {
   args = [
     "APP_PREFIX=myorg",
     "APP_ORIGIN=myapp",
-    "OKTA_CLIENT_ID=my-okta-client-id",
-    "OKTA_BASE_URL=myorg.oktapreview.com"
+    "APP_TARGET=myapp",
+    "URL_TARGET=https://%s.herokuapp.com/my_okta_consume_route",
+    "OKTA_API_URL=https://myorg.oktapreview.com/oauth2/v1/clients/my-client-id"
   ]
 }
 ```
@@ -38,8 +39,9 @@ action "create-okta-whitelist" {
   args = [
     "APP_PREFIX=myorg",
     "APP_ORIGIN=myrelatedapp",
-    "OKTA_CLIENT_ID=my-okta-client-id",
-    "OKTA_BASE_URL=myorg.oktapreview.com"
+    "APP_TARGET=myapp",
+    "URL_TARGET=https://%s.herokuapp.com/my_okta_consume_route",
+    "OKTA_API_URL=https://myorg.oktapreview.com/oauth2/v1/clients/my-client-id"
   ]
 }
 ```
@@ -54,6 +56,7 @@ action "create-okta-whitelist" {
 In order to supply arguments to this action, use a format similar to environment variable definitions - as shown above in the examples.
 
 * `APP_PREFIX`     - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
-* `APP_ORIGIN`     - **Optional.** The name of the Development App. Define if you're deploying a Related App.
-* `OKTA_CLIENT_ID` - **Required.** The ID that specifies the Admin Application in our Okta sandbox.
-* `OKTA_BASE_URL`  - **Required.** The Base URL for the Okta Authorization Server
+* `APP_ORIGIN`     - **Required.** The name of the Development App.
+* `APP_TARGET`     - **Required.** The name of the App that will host your Okta consume endpoint.
+* `URL_TARGET`     - **Required.** The URL you want whitelisted with Okta. Use a single %s to indicate where you would like the app name to appear.
+* `OKTA_API_URL`   - **Required.** The URL for your Okta API, including Client ID
