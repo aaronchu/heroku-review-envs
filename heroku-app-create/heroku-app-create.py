@@ -441,6 +441,7 @@ if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
 
 # see if there's a review app for this branch already
 reviewapp = get_app_by_name_or_id( app_name )
+print(reviewapp)
 
 # if it wasn't found, try to use an existing review app if it already exists
 if reviewapp is None and app_origin == app_short_name:
