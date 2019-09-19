@@ -316,7 +316,7 @@ def get_app_name( svc_origin, svc_name, pr_num, prefix ):
 
 
 # PROCESS ENV and ARGS #########################################################
-print("debug")
+
 print ("Start "+sys.argv[0])
 def mask( k, v ):
     if 'TOKEN' in k or 'SECRET' in k:
@@ -426,22 +426,24 @@ except:
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
+if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ):
     if get_app_by_name_or_id( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
-    else:
+    elif REQUIRE_LABEL:
         # If nothing is spun up so far, but labels are required
-        if REQUIRE_LABEL:
-            print("To spin up a review environment, label your open pr with "+LABEL_NAME)
+        print("To spin up a review environment, label your open pr with "+LABEL_NAME)
+    elif pr_status == 'closed':
+        print("This PR is currently closed.")
+    else:
+        print("Quitting. Either label missing or PR is closed.")
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
 
 # see if there's a review app for this branch already
 reviewapp = get_app_by_name_or_id( app_name )
-print("review app: " + str(reviewapp))
 
 # if it wasn't found, try to use an existing review app if it already exists
 if reviewapp is None and app_origin == app_short_name:
