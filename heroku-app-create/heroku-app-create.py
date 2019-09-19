@@ -316,7 +316,7 @@ def get_app_name( svc_origin, svc_name, pr_num, prefix ):
 
 
 # PROCESS ENV and ARGS #########################################################
-
+pirnt("debug")
 print ("Start "+sys.argv[0])
 def mask( k, v ):
     if 'TOKEN' in k or 'SECRET' in k:
