@@ -66,14 +66,15 @@ action "create-myrelatedapp" {
 In order to supply arguments to this action, use a format similar to environment variable definitions - as shown above in the examples.
 
 * `APP_PREFIX` - **Required.** A prefix for all of your Heroku app names. You probably want this specific to your organization or team. It's best that this is kept short as Heroku has a 30-character limit on app names.
-* `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
+* `APP_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
 * `APP_NAME` - **Required.** The name of this App being deployed.
 * `APP_ORIGIN` - **Optional.** The name of the Development App. Define if you're deploying a Related App.
+* `BRANCH` - **Required.** The branch of the app that you need deployed.
 * `HEROKU_PIPELINE_NAME` - **Required.** The name of the Heroku Pipeline that contains apps for this App.
+* `HEROKU_TEAM_NAME` - **Required.** The team name for your Heroku Team.
 * `REPO` - **Required.** The GitHub Repo that you're deploying this App from. Must be in `user`/`repo_name` or `org`/`repo_name` format.
 * `REPO_ORIGIN` - **Optional.** The GitHub Repo for the Development App. Define if you're deploying a Related App.
-* `BRANCH` - **Required.** The branch of the app that you need deployed.
-* `APP_REF` - **Optional.** Define what `config_vars`/environment variables to be set in order to reference another app. See the below section on how to use this.
+* `REQUIRE_LABEL` - **Optional.** Requires the PR to labelled with `review-env` before invoking any action.
 
 ## Referencing Apps
 
