@@ -56,6 +56,8 @@ API_URL_GITHUB = 'https://api.github.com'
 def get_review_app_by_branch( pipeline_id, branch_name ):
     reviewapps = heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU )
     reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
+    print("get_review_app_by_branch:")
+    print(json.dumps(reviewapp, sort_keys=True, indent=4))
     try:
         reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
@@ -93,6 +95,7 @@ def delete_app_by_name( app_name ):
 def get_app_by_name_or_id( app_name ):
     r = requests.get(API_URL_HEROKU+'/apps/'+app_name, headers=HEADERS_HEROKU)
     app = json.loads(r.text)
+    print("get_app_by_name_or_id:")
     print(json.dumps(app, sort_keys=True, indent=4))
     try:
         if app is not None and 'name' in app:
@@ -441,6 +444,7 @@ reviewapp = get_app_by_name_or_id( app_name )
 
 # if it wasn't found, try to use an existing review app if it already exists
 if reviewapp is None and app_origin == app_short_name:
+    print("Looking up the app by branch instead")
     reviewapp = get_review_app_by_branch( pipeline['id'], branch)
 
 # Heroku wants us to pull the 302 location for the actual code download by
