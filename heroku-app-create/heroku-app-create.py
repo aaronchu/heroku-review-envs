@@ -406,7 +406,7 @@ try:
     pr_num = pr['number']
     pr_labels = [x['name'] for x in pr['labels']]
     pr_status = pr['state']
-    print ("Found Pull Request: \"%s\" id: %s" % (pr['title'].encode('utf-8'), pr_num))
+    print ("Found Pull Request: \"%s\" id: %s (%s)" % (pr['title'].encode('utf-8'), pr_num, pr_status))
 except Exception as ex:
     print(ex)
     traceback.print_exc()
