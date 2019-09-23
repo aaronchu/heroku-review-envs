@@ -279,7 +279,7 @@ def get_latest_commit_for_branch( repo, branch_name ):
         traceback.print_exc()
         return None
 
-def get_pr_name( repo, branch_name, page=1 ):
+def get_pr_by_name( repo, branch_name, page=1 ):
     r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
     try:
@@ -287,7 +287,7 @@ def get_pr_name( repo, branch_name, page=1 ):
         if pr:
             return pr
         else:
-            return get_pr_name( repo, branch_name, page=page+1)
+            return get_pr_by_name( repo, branch_name, page=page+1)
     except Exception as ex:
         print(ex)
         traceback.print_exc()
@@ -402,7 +402,7 @@ print ("Branch to deploy: "+branch)
 
 # look up the PR number for origin repo
 try:
-    pr = get_pr_name( repo_origin, branch_origin )
+    pr = get_pr_by_name( repo_origin, branch_origin )
     pr_num = pr['number']
     pr_labels = [x['name'] for x in pr['labels']]
     pr_status = pr['state']
