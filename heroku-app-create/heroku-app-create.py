@@ -330,7 +330,6 @@ if 'GITHUB_EVENT_PATH' in os.environ:
     EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
     with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
         GH_EVENT = json.load(eventfile)
-        print(json.dumps(GH_EVENT, sort_keys=True, indent=4))
 
 # support arguments passed in via the github actions workflow via the syntax
 # args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
@@ -398,7 +397,10 @@ else:
     # related app
     repo = args['REPO']
     branch = args['BRANCH']
-    commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
+    try:
+        commit_sha = GH_EVENT['pull_request']['head']['sha']
+    except:
+        commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
 
 github_org = repo.split('/')[0]
 print ("GitHub Org: "+github_org)
