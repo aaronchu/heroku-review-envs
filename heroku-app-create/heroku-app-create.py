@@ -328,7 +328,7 @@ print ("Environment: " + str({k: mask(k,v) for k, v in os.environ.items()}))
 # get the github event json
 if 'GITHUB_EVENT_PATH' in os.environ:
     EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
-    with open(EVENT_FILE, 'r') as eventfile:
+    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
         GH_EVENT = json.load(eventfile)
         print(json.dumps(GH_EVENT, sort_keys=True, indent=4))
 
