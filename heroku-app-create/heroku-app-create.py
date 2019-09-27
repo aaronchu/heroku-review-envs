@@ -408,16 +408,20 @@ print ("Branch to deploy: "+branch)
 # DETERMINE THE APP NAME #######################################################
 
 try:
-    # look up the PR number for origin repo
-    pr = get_pr_by_name( repo_origin, branch_origin )
-    pr_num = pr['number']
-    pr_labels = [x['name'] for x in pr['labels']]
-    pr_status = pr['state']
-    print ("Found Pull Request: \"%s\" id: %s (%s)" % (pr['title'].encode('utf-8'), pr_num, pr_status))
-except Exception as ex:
-    print(ex)
-    traceback.print_exc()
-    sys.exit("Couldn't find a PR for this branch - %s@%s" % (repo_origin, branch_origin))
+    pr = GH_EVENT
+except:
+    try:
+        # look up the PR number for origin repo
+        pr = get_pr_by_name( repo_origin, branch_origin )
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+        sys.exit("Couldn't find a PR for this branch - %s@%s" % (repo_origin, branch_origin))
+
+pr_num = pr['number']
+pr_labels = [x['name'] for x in pr['labels']]
+pr_status = pr['state']
+print ("Found Pull Request: \"%s\" id: %s (%s)" % (pr['title'].encode('utf-8'), pr_num, pr_status))
 
 # determine the app_name
 app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
