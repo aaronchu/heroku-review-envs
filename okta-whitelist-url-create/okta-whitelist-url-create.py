@@ -35,17 +35,6 @@ def get_app_name( svc_origin, svc_target, pr_num, prefix ):
     # truncate to 30 chars for Heroku
     return name[:30]
 
-# GitHub Related Functions #####################################################
-
-def get_pr_name( repo, branch_name, page=1 ):
-    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
-    prs = json.loads(r.text)
-    pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
-    if pr:
-        return pr
-    else:
-        return get_pr_name( repo, branch_name, page=page+1)
-
 # PROCESS ENV and ARGS #########################################################
 
 print ("Start "+sys.argv[0])
@@ -55,6 +44,12 @@ def mask( k, v ):
     else:
         return v
 print ("Environment: " + str({k: mask(k,v) for k, v in os.environ.items()}))
+
+# get the github event json
+if 'GITHUB_EVENT_PATH' in os.environ:
+    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
+    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
+        GH_EVENT = json.load(eventfile)
 
 # support arguments passed in via the github actions workflow via the syntax
 # args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
@@ -89,7 +84,10 @@ app_target = args['APP_TARGET']
 print("Target Service: "+app_target)
 
 # pull branch name from the GITHUB_REF
-branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
+try:
+    branch_origin = GH_EVENT['pull_request']['head']['ref'] # this has been more reliable
+except:
+    branch_origin = os.environ['GITHUB_REF'][11:] # this is sometimes wrong
 
 # set the app name prefix properly
 app_prefix = args['APP_PREFIX']
@@ -102,16 +100,17 @@ api_url_okta = args['OKTA_API_URL']
 
 # DETERMINE THE APP NAME #######################################################
 
-# look up the PR number for origin repo
 try:
-    pr = get_pr_name( repo_origin, branch_origin )
-    pr_num = pr['number']
-    pr_labels = [x['name'] for x in pr['labels']]
-    pr_status = pr['state']
-    print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
+    # we expect that the event payload has a pull_request object at the first level
+    pr = GH_EVENT['pull_request']
 except Exception as ex:
     print(ex)
     sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+
+pr_num = pr['number']
+pr_labels = [x['name'] for x in pr['labels']]
+pr_status = pr['state']
+print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 
 # determine the app_name
 app_name = get_app_name( app_origin, app_target, pr_num, app_prefix )

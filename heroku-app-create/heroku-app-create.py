@@ -6,6 +6,7 @@ import requests
 import re
 import sys
 import time
+import traceback
 import urllib.parse
 
 # some constants
@@ -55,21 +56,28 @@ API_URL_GITHUB = 'https://api.github.com'
 def get_review_app_by_branch( pipeline_id, branch_name ):
     reviewapps = heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU )
     reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
+    print("get_review_app_by_branch:")
+    print(json.dumps(reviewapp, sort_keys=True, indent=4))
     try:
+        reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
             return reviewapp
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+        sys.exit("Couldn't find a Review App for this pipeline @ branch - " + pipeline_id + '@' + branch_name)
     return None
 
 def get_review_app_by_id( pipeline_id, id ):
     reviewapps = heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/review-apps', headers=HEADERS_HEROKU )
     reviewapp = next((x for x in reviewapps if x['id'] == id), None)
     try:
+        reviewapp = next((x for x in reviewapps if x['id'] == id), None)
         if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
             return reviewapp
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_app_setup_by_id( app_setup_id ):
@@ -87,23 +95,26 @@ def delete_app_by_name( app_name ):
 def get_app_by_name_or_id( app_name ):
     r = requests.get(API_URL_HEROKU+'/apps/'+app_name, headers=HEADERS_HEROKU)
     app = json.loads(r.text)
+    print("get_app_by_name_or_id:")
     print(json.dumps(app, sort_keys=True, indent=4))
     try:
         if app is not None and 'name' in app:
             return app
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_app_by_id( app_id ):
     r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
     apps = json.loads(r.text)
-    app = next((x for x in apps if x['id'] == app_id), None)
     try:
+        app = next((x for x in apps if x['id'] == app_id), None)
         if app is not None and 'id' in app:
             return app
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def rename_app( app_id, app_name ):
@@ -113,11 +124,14 @@ def rename_app( app_id, app_name ):
 def get_pipeline_by_name( pipeline_name ):
     r = requests.get(API_URL_HEROKU+'/pipelines', headers=HEADERS_HEROKU)
     pipelines = json.loads(r.text)
-    pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
-    if pipeline is not None and 'id' in pipeline:
-        return pipeline
-    else:
-        return None
+    try:
+        pipeline = next((x for x in pipelines if x['name'] == pipeline_name), None)
+        if pipeline is not None and 'id' in pipeline:
+            return pipeline
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+    return None
 
 def create_team_app( name, team ):
     r = requests.post(API_URL_HEROKU+'/teams/apps', headers=HEADERS_HEROKU, data=json.dumps( {'name': name, 'team': team} ))
@@ -186,8 +200,9 @@ def get_features_for_app( app_id ):
     try:
         if features[0]['id'] and features[0]['doc_url']:
             return features
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_config_vars_for_app( app_id ):
@@ -249,8 +264,9 @@ def get_download_url( repo, branch, token ):
         r = requests.get(download_url, allow_redirects=False)
         if r.status_code == 302:
             return r.headers['location']
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
     return None
 
 def get_latest_commit_for_branch( repo, branch_name ):
@@ -258,17 +274,24 @@ def get_latest_commit_for_branch( repo, branch_name ):
     branch = json.loads(r.text)
     try:
         return branch['commit']['sha']
-    except:
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
         return None
 
-def get_pr_name( repo, branch_name, page=1 ):
+def get_pr_by_name( repo, branch_name, page=1 ):
     r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
     prs = json.loads(r.text)
-    pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
-    if pr:
-        return pr
-    else:
-        return get_pr_name( repo, branch_name, page=page+1)
+    try:
+        pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
+        if pr:
+            return pr
+        else:
+            return get_pr_by_name( repo, branch_name, page=page+1)
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+        return None
 
 def add_pr_comment( repo, pr_id, message):
     payload = {
@@ -301,6 +324,12 @@ def mask( k, v ):
     else:
         return v
 print ("Environment: " + str({k: mask(k,v) for k, v in os.environ.items()}))
+
+# get the github event json
+if 'GITHUB_EVENT_PATH' in os.environ:
+    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
+    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
+        GH_EVENT = json.load(eventfile)
 
 # support arguments passed in via the github actions workflow via the syntax
 # args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
@@ -349,7 +378,10 @@ pipeline_name = args['HEROKU_PIPELINE_NAME']
 print ("Pipeline Name: "+pipeline_name)
 
 # pull branch name from the GITHUB_REF
-branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
+try:
+    branch_origin = GH_EVENT['pull_request']['head']['ref'] # this has been more reliable
+except:
+    branch_origin = os.environ['GITHUB_REF'][11:] # this is sometimes wrong
 commit_sha = os.environ['GITHUB_SHA']
 origin_commit_sha = commit_sha
 
@@ -368,7 +400,10 @@ else:
     # related app
     repo = args['REPO']
     branch = args['BRANCH']
-    commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
+    try:
+        commit_sha = GH_EVENT['pull_request']['head']['sha']
+    except:
+        commit_sha = get_latest_commit_for_branch( args['REPO'], branch)
 
 github_org = repo.split('/')[0]
 print ("GitHub Org: "+github_org)
@@ -377,16 +412,22 @@ print ("Branch to deploy: "+branch)
 
 # DETERMINE THE APP NAME #######################################################
 
-# look up the PR number for origin repo
 try:
-    pr = get_pr_name( repo_origin, branch_origin )
-    pr_num = pr['number']
-    pr_labels = [x['name'] for x in pr['labels']]
-    pr_status = pr['state']
-    print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
-except Exception as ex:
-    print(ex)
-    sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+    # we expect that the event payload has a pull_request object at the first level
+    pr = GH_EVENT['pull_request']
+except:
+    try:
+        # look up the PR number for origin repo
+        pr = get_pr_by_name( repo_origin, branch_origin )
+    except Exception as ex:
+        print(ex)
+        traceback.print_exc()
+        sys.exit("Couldn't find a PR for this branch - %s@%s" % (repo_origin, branch_origin))
+
+pr_num = pr['number']
+pr_labels = [x['name'] for x in pr['labels']]
+pr_status = pr['state']
+print ("Found Pull Request: \"%s\" id: %s (%s)" % (pr['title'].encode('utf-8'), pr_num, pr_status))
 
 # determine the app_name
 app_name = get_app_name( app_origin, app_short_name, pr_num, app_prefix )
@@ -402,15 +443,18 @@ except:
 
 # if this is not a labelled PR
 print ("Detected Labels: " + ', '.join(pr_labels))
-if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ) or pr_status == 'closed':
+if ( REQUIRE_LABEL and LABEL_NAME not in pr_labels ):
     if get_app_by_name_or_id( app_name ):
         # if app is already spun up, shut it down
         print("Spinning down app "+app_name)
         delete_app_by_name( app_name )
-    else:
+    elif REQUIRE_LABEL:
         # If nothing is spun up so far, but labels are required
-        if REQUIRE_LABEL:
-            print("To spin up a review environment, label your open pr with "+LABEL_NAME)
+        print("To spin up a review environment, label your open pr with "+LABEL_NAME)
+    elif pr_status == 'closed':
+        print("This PR is currently closed.")
+    else:
+        print("Quitting. Either label missing or PR is closed.")
     sys.exit(0)
 
 # START CREATING/DEPLOYING #####################################################
@@ -420,6 +464,7 @@ reviewapp = get_app_by_name_or_id( app_name )
 
 # if it wasn't found, try to use an existing review app if it already exists
 if reviewapp is None and app_origin == app_short_name:
+    print("Looking up the app by branch instead")
     reviewapp = get_review_app_by_branch( pipeline['id'], branch)
 
 # Heroku wants us to pull the 302 location for the actual code download by
@@ -487,7 +532,9 @@ else:
             print(json.dumps(response, sort_keys=True, indent=4))
             reviewapp_id = response['id']
             print ("Status is currently " + response['status'])
-        except:
+        except Exception as ex:
+            print(ex)
+            traceback.print_exc()
             sys.exit("Couldn't create ReviewApp.")
 
         # look up the app ID, wait for it to show up
