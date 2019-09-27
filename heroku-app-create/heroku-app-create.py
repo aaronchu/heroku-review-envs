@@ -408,7 +408,8 @@ print ("Branch to deploy: "+branch)
 # DETERMINE THE APP NAME #######################################################
 
 try:
-    pr = GH_EVENT
+    # we expect that the event payload has a pull_request object at the first level
+    pr = GH_EVENT['pull_request']
 except:
     try:
         # look up the PR number for origin repo
