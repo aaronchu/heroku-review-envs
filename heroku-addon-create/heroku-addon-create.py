@@ -140,6 +140,12 @@ def mask( k, v ):
         return v
 print ("Environment: " + str({k: mask(k,v) for k, v in os.environ.items()}))
 
+# get the github event json
+if 'GITHUB_EVENT_PATH' in os.environ:
+    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
+    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
+        GH_EVENT = json.load(eventfile)
+
 # support arguments passed in via the github actions workflow via the syntax
 # args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
 args = {}
@@ -177,7 +183,10 @@ app_origin = app_short_name
 print("Originating Service: "+app_origin)
 
 # pull branch name from the GITHUB_REF
-branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
+try:
+    branch_origin = GH_EVENT['pull_request']['head']['ref'] # this has been more reliable
+except:
+    branch_origin = os.environ['GITHUB_REF'][11:] # this is sometimes wrong
 commit_sha = os.environ['GITHUB_SHA']
 origin_commit_sha = commit_sha
 

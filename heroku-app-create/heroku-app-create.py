@@ -378,7 +378,10 @@ pipeline_name = args['HEROKU_PIPELINE_NAME']
 print ("Pipeline Name: "+pipeline_name)
 
 # pull branch name from the GITHUB_REF
-branch_origin = os.environ['GITHUB_REF'][11:] # this dumps the preceding 'refs/heads/'
+try:
+    branch_origin = GH_EVENT['pull_request']['head']['ref'] # this has been more reliable
+except:
+    branch_origin = os.environ['GITHUB_REF'][11:] # this is sometimes wrong
 commit_sha = os.environ['GITHUB_SHA']
 origin_commit_sha = commit_sha
 
