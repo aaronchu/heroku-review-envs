@@ -325,6 +325,13 @@ def mask( k, v ):
         return v
 print ("Environment: " + str({k: mask(k,v) for k, v in os.environ.items()}))
 
+# get the github event json
+if 'GITHUB_EVENT_PATH' in os.environ:
+    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
+    with open(EVENT_FILE, 'r') as eventfile:
+        GH_EVENT = json.load(eventfile)
+        print(json.dumps(GH_EVENT, sort_keys=True, indent=4))
+
 # support arguments passed in via the github actions workflow via the syntax
 # args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
 args = {}
@@ -400,8 +407,8 @@ print ("Branch to deploy: "+branch)
 
 # DETERMINE THE APP NAME #######################################################
 
-# look up the PR number for origin repo
 try:
+    # look up the PR number for origin repo
     pr = get_pr_by_name( repo_origin, branch_origin )
     pr_num = pr['number']
     pr_labels = [x['name'] for x in pr['labels']]
