@@ -35,17 +35,6 @@ def get_app_name( svc_origin, svc_target, pr_num, prefix ):
     # truncate to 30 chars for Heroku
     return name[:30]
 
-# GitHub Related Functions #####################################################
-
-def get_pr_name( repo, branch_name, page=1 ):
-    r = requests.get(API_URL_GITHUB+'/repos/'+repo+'/pulls?state=all&page='+str(page)+'&per_page=100', headers=HEADERS_GITHUB)
-    prs = json.loads(r.text)
-    pr = next((x for x in prs if x['head']['ref'] == branch_name), None)
-    if pr:
-        return pr
-    else:
-        return get_pr_name( repo, branch_name, page=page+1)
-
 # PROCESS ENV and ARGS #########################################################
 
 print ("Start "+sys.argv[0])
@@ -114,13 +103,9 @@ api_url_okta = args['OKTA_API_URL']
 try:
     # we expect that the event payload has a pull_request object at the first level
     pr = GH_EVENT['pull_request']
-except:
-    try:
-        # look up the PR number for origin repo
-        pr = get_pr_name( repo_origin, branch_origin )
-    except Exception as ex:
-        print(ex)
-        sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+except Exception as ex:
+    print(ex)
+    sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
 
 pr_num = pr['number']
 pr_labels = [x['name'] for x in pr['labels']]
