@@ -210,16 +210,21 @@ print ("Branch to deploy: "+branch)
 
 # DETERMINE THE APP NAME #######################################################
 
-# look up the PR number for origin repo
 try:
-    pr = get_pr_name( repo_origin, branch_origin )
-    pr_num = pr['number']
-    pr_labels = [x['name'] for x in pr['labels']]
-    pr_status = pr['state']
-    print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
-except Exception as ex:
-    print(ex)
-    sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+    # we expect that the event payload has a pull_request object at the first level
+    pr = GH_EVENT['pull_request']
+except:
+    try:
+        # look up the PR number for origin repo
+        pr = get_pr_name( repo_origin, branch_origin )
+    except Exception as ex:
+        print(ex)
+        sys.exit("Couldn't find a PR for this branch - " + repo_origin + '@' + branch_origin)
+
+pr_num = pr['number']
+pr_labels = [x['name'] for x in pr['labels']]
+pr_status = pr['state']
+print ("Found Pull Request: \"" + pr['title'] + "\" id: " + str(pr_num))
 
 # check required PR label
 print ("Detected Labels: " + ', '.join(pr_labels))
