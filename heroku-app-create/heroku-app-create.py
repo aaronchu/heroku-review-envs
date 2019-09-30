@@ -239,6 +239,8 @@ def grant_review_app_access_to_user( app_name, email ):
         'silent': True
     }
     r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
+    if r.status_code != 200:
+        print("While granting %s access to %s - expected status code 200, but got %s: %s" % (email, app_name, r.status_code, r.text))
     return json.loads(r.text)
 
 def get_team_members( team_name ):
