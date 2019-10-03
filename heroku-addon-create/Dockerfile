@@ -1,4 +1,4 @@
-FROM trrimages/actions
+FROM trrimages/actions:python
 
 LABEL "com.github.actions.name"="Heroku Create Review Environment Addon"
 LABEL "com.github.actions.description"="Creates a Heroku Addon for a Review Environment"
