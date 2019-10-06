@@ -180,6 +180,8 @@ print ("Service Name: "+app_short_name)
 
 # APP_ORIGIN is the originating app. Fill in the value of this var just for ease of use.
 app_origin = app_short_name
+if 'APP_ORIGIN' in args:
+    app_origin = args['APP_ORIGIN']
 print("Originating Service: "+app_origin)
 
 # pull branch name from the GITHUB_REF
