@@ -53,9 +53,8 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     return None
 
 def get_app_by_name( app_name ):
-    r = requests.get(API_URL_HEROKU+'/apps', headers=HEADERS_HEROKU)
-    apps = json.loads(r.text)
-    app = next((x for x in apps if x['name'] == app_name), None)
+    r = requests.get(API_URL_HEROKU+'/apps/'+app_name, headers=HEADERS_HEROKU)
+    app = json.loads(r.text)
     try:
         if app is not None and 'id' in app:
             return app
@@ -180,6 +179,8 @@ print ("Service Name: "+app_short_name)
 
 # APP_ORIGIN is the originating app. Fill in the value of this var just for ease of use.
 app_origin = app_short_name
+if 'APP_ORIGIN' in args:
+    app_origin = args['APP_ORIGIN']
 print("Originating Service: "+app_origin)
 
 # pull branch name from the GITHUB_REF
