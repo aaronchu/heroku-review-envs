@@ -60,7 +60,7 @@ def get_review_app_by_branch( pipeline_id, branch_name ):
     print(json.dumps(reviewapp, sort_keys=True, indent=4))
     try:
         reviewapp = next((x for x in reviewapps if x['branch'] == branch_name), None)
-        if reviewapp is not None and 'app' in reviewapp and 'id' in reviewapp['app']:
+        if reviewapp is not None and 'app' in reviewapp and reviewapp['app'] is not None and 'id' in reviewapp['app']:
             return reviewapp
     except Exception as ex:
         print(ex)
