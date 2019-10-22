@@ -275,7 +275,7 @@ if app is not None:
     for attach_app_shortname in app_short_names:
         attach_app_name = get_app_name( app_origin, attach_app_shortname, pr_num, app_prefix )
         existing_app_addons = get_app_addon_attachments( attach_app_name )
-        existing_app_addon = next((x for x in existing_app_addons if x['name'] == args['ADDON_NAME']), None)
+        existing_app_addon = next((x for x in existing_app_addons if type(x) is dict and x['name'] == args['ADDON_NAME']), None)
         if existing_app_addon:
             print ("App %s already has addon %s (%s) attached as %s." % (attach_app_name, addon['name'], args['ADDON_PLAN'], args['ADDON_NAME']))
         else:
