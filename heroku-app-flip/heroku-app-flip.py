@@ -143,9 +143,6 @@ if domain not in ["com", "ninja"]:
 if svc not in ["web", "api", "api-gateway", "website", "inventory"]:
     sys.exit("Invalid svc arg '%s'. Must be either 'web', 'api', 'api-gateway', 'website', or 'inventory" % ( svc ))
 
-if not pr_num.isdigit():
-    sys.exit("Invalid pr_num arg '%s'. Must be a positive number" % ( pr_num ))
-
 # local variables
 
 redirect_uri = "https://%s.herokuapp.com/admin/okta" % get_app_name(svc, "web", pr_num)
