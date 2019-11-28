@@ -7,8 +7,14 @@ import sys
 
 # tokens
 OKTA_API_TOKEN = os.environ['OKTA_API_TOKEN']
-OKTA_API_URL = os.environ['OKTA_API_URL']
 GHA_USER_TOKEN = os.environ['GHA_USER_TOKEN']
+
+# basic headers for communicating with the Okta API
+HEADERS_OKTA = {
+    'Accept': 'application/json',
+    'Authorization': 'SSWS %s' % OKTA_API_TOKEN,
+    'Content-Type': 'application/json'
+    }
 
 # basic headers for communicating with the GitHub API
 HEADERS_GITHUB = {
@@ -60,7 +66,8 @@ args_or_envs = [
     'APP_PREFIX',
     'APP_ORIGIN',
     'APP_TARGET',
-    'URL_TARGET'
+    'URL_TARGET',
+    'OKTA_API_URL'
 ]
 for i in args_or_envs:
     if i not in args and i in os.environ:
@@ -76,13 +83,6 @@ print("Originating Service: "+app_origin)
 app_target = args['APP_TARGET']
 print("Target Service: "+app_target)
 
-# basic headers for communicating with the Okta API
-headers_okta = {
-    'Accept': 'application/json',
-    'Authorization': 'SSWS %s' % OKTA_API_TOKEN,
-    'Content-Type': 'application/json'
-    }
-
 # pull branch name from the GITHUB_REF
 try:
     branch_origin = GH_EVENT['pull_request']['head']['ref'] # this has been more reliable
@@ -94,6 +94,9 @@ app_prefix = args['APP_PREFIX']
 
 # we always need to know the originating repo:
 repo_origin = os.environ['GITHUB_REPOSITORY']
+
+# set the Okta API URL
+api_url_okta = args['OKTA_API_URL']
 
 # DETERMINE THE APP NAME #######################################################
 
@@ -120,7 +123,7 @@ print ("Starint Okta Whitelist URL Destroy")
 
 uri_to_remove = args['URL_TARGET'] % app_name
 
-r = requests.get(OKTA_API_URL, headers=headers_okta)
+r = requests.get(api_url_okta, headers=HEADERS_OKTA)
 client = json.loads(r.text)
 
 redirect_uris = client['redirect_uris']
@@ -131,7 +134,7 @@ if any(uri_to_remove in s for s in redirect_uris):
   del client['client_secret_expires_at']
   del client['client_id_issued_at']
 
-  r2 = requests.put(OKTA_API_URL, headers=headers_okta, data=json.dumps(client))
+  r2 = requests.put(api_url_okta, headers=HEADERS_OKTA, data=json.dumps(client))
 
   if r2.status_code == 200:
     print ('The URI %s has been removed from the whitelist!' % uri_to_remove)
