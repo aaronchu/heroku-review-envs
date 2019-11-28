@@ -38,8 +38,10 @@ args = {}
 for arg in sys.argv:
     pair = arg.split('=')
     if len(pair) > 1:
+        print("here1: %s" % ( arg ))
         args[pair[0]] = '='.join(pair[1:])
     else:
+        print("here2: %s" % ( arg ))
         args[arg] = arg
 
 print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
