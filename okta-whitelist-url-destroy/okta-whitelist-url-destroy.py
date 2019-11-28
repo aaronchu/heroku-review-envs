@@ -80,8 +80,9 @@ print("Target Service: "+app_target)
 
 # set the Okta API URL and API Token
 has_ninja_label = args['HAS_NINJA_LABEL']
-okta_api_url = OKTA_API_URL_NINJA if has_ninja_label else OKTA_API_URL
-okta_api_token = OKTA_API_TOKEN_NINJA if has_ninja_label else OKTA_API_TOKEN
+print("Has ninja label: %s" % ( has_ninja_label ))
+okta_api_url = OKTA_API_URL_NINJA if has_ninja_label == "true" else OKTA_API_URL
+okta_api_token = OKTA_API_TOKEN_NINJA if has_ninja_label == "true" else OKTA_API_TOKEN
 
 # basic headers for communicating with the Okta API
 headers_okta = {
