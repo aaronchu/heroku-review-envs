@@ -42,7 +42,7 @@ for arg in sys.argv:
     else:
         args[arg] = arg
 
-# print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
+print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
 config_vars = json.loads(args['CONFIG_VARS'])
 app_prefix = args['APP_PREFIX']
