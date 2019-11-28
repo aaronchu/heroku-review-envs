@@ -46,7 +46,14 @@ for arg in sys.argv:
 
 print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
-config_vars = json.loads(args['CONFIG_VARS'])
+config_vars = {}
+if 'CONFIG_VARS' in args:
+    for pair in args['CONFIG_VARS'].split('|'):
+        (key, value) = pair.split('%')
+        config_vars[key] = value
+
+print("Config Vars: %s" % ( config_vars ))
+
 app_prefix = args['APP_PREFIX']
 app_origin = args['APP_ORIGIN']
 app_target = args['APP_TARGET']
