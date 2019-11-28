@@ -44,7 +44,7 @@ for arg in sys.argv:
         print("here2: %s" % ( arg ))
         args[arg] = arg
 
-print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
+# print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
 config_vars = {}
 if 'CONFIG_VARS' in args:
@@ -52,7 +52,7 @@ if 'CONFIG_VARS' in args:
         (key, value) = pair.split('%')
         config_vars[key] = value
 
-print("Config Vars: %s" % ( config_vars ))
+# print("Config Vars: %s" % ( config_vars ))
 
 app_prefix = args['APP_PREFIX']
 app_origin = args['APP_ORIGIN']
