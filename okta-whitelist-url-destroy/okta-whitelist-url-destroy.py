@@ -132,7 +132,6 @@ r = requests.get(okta_api_url, headers=headers_okta)
 client = json.loads(r.text)
 
 redirect_uris = client['redirect_uris']
-print("Redirect URIs: %s" % ( redirect_uris ))
 
 if any(uri_to_remove in s for s in redirect_uris):
   print ('The URI %s is whitelisted. Removing it from the whitelist now!' % uri_to_remove)
