@@ -24,7 +24,8 @@ def get_app_name( svc_origin, svc_target, pr_num, prefix ):
     else:
         app_name = "%s-%s-pr-%s-%s" % ( prefix, svc_origin, pr_num, svc_target )
 
-    return app_name
+    # truncate to 30 chars for Heroku
+    return app_name[:30]
 
 def set_config_vars( app_name, config_vars ):
     r = requests.patch(API_URL_HEROKU+'/apps/'+app_name+'/config-vars', headers=HEADERS_HEROKU, data=json.dumps(config_vars))
