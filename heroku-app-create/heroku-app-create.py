@@ -248,7 +248,7 @@ def grant_review_app_access_to_user( app_name, email ):
         r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
 
     if r.status_code > 299 or r.status_code < 200:
-        print "Error granting permissions to %s: %s" % ( email, r.text )
+        print("Error granting permissions to %s: %s" % ( email, r.text ))
     return json.loads(r.text)
 
 def get_team_members( team_name ):
