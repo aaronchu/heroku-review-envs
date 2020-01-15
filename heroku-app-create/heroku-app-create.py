@@ -233,12 +233,23 @@ def get_review_app_config_vars_for_pipeline( pipeline_id, stage ):
     return heroku_paginated_get_json_array( API_URL_HEROKU+'/pipelines/'+pipeline_id+'/stage/'+stage+'/config-vars', headers=HEADERS_HEROKU_REVIEW_PIPELINES )
 
 def grant_review_app_access_to_user( app_name, email ):
-    payload = {
-        'user': email,
-        'permissions': ['view', 'manage'],
-        'silent': True
-    }
-    r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
+    check_user = requests.get(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators/'+email, headers=HEADERS_HEROKU_REVIEW_PIPELINES)
+    if check_user.status_code == 200:
+        payload = {
+            'permissions': ['view', 'manage']
+        }
+        r = requests.patch(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators/'+email, headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
+    else:
+        payload = {
+            'user': email,
+            'permissions': ['view', 'manage'],
+            'silent': True
+        }
+        r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
+
+    if r.status_code > 299 or r.status_code < 200:
+        if "team admin and cannot be joined on app" not in r.text:
+            print("Error granting permissions to %s: %s" % ( email, r.text ))
     return json.loads(r.text)
 
 def get_team_members( team_name ):
@@ -603,7 +614,7 @@ else:
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
     print( "Found %s team members to grant access to." % len(users) )
-    for email in [ x['email'] for x in users ]:
+    for email in [ x['email'] for x in users if x['email'] != "devops-noreply+review-envs@therealreal.com" ]:
         grant_review_app_access_to_user( app_name, email )
 
 message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
