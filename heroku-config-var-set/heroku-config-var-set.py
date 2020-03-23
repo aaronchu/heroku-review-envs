@@ -32,31 +32,12 @@ def set_config_vars( app_name, config_vars ):
     if r.status_code != 200:
         sys.exit("There was an error setting config vars for %s - %s" % ( app_name, r.status_code ))
 
-# arguments
+# Env variables
+app_prefix = os.environ['APP_PREFIX']
+app_origin = os.environ['APP_ORIGIN']
+app_target = os.environ['APP_TARGET']
 
-args = {}
-for arg in sys.argv:
-    pair = arg.split('=')
-    if len(pair) > 1:
-        args[pair[0]] = '='.join(pair[1:])
-    else:
-        args[arg] = arg
-
-# print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
-
-config_vars = {}
-if 'CONFIG_VARS' in args:
-    for pair in args['CONFIG_VARS'].split('|'):
-        (key, value) = pair.split('%')
-        config_vars[key] = value
-
-# print("Config Vars: %s" % ( config_vars ))
-
-app_prefix = args['APP_PREFIX']
-app_origin = args['APP_ORIGIN']
-app_target = args['APP_TARGET']
 # pr_num = args['PR_NUM']
-
 if 'GITHUB_EVENT_PATH' in os.environ:
     EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
     with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
