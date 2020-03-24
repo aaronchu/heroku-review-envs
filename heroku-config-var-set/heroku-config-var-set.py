@@ -52,18 +52,11 @@ if 'CONFIG_VARS' in args:
 
 # print("Config Vars: %s" % ( config_vars ))
 
-app_prefix = args['APP_PREFIX']
-app_origin = args['APP_ORIGIN']
-app_target = args['APP_TARGET']
-# pr_num = args['PR_NUM']
-
-if 'GITHUB_EVENT_PATH' in os.environ:
-    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
-    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
-        GH_EVENT = json.load(eventfile)
-
-pr = GH_EVENT['pull_request']
-pr_num = pr['number']
+# Env variables
+app_prefix = os.environ['APP_PREFIX']
+app_origin = os.environ['APP_ORIGIN']
+app_target = os.environ['APP_TARGET']
+pr_num = os.environ['PR_NUM']
 
 # local variables
 
