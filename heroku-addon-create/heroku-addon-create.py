@@ -159,6 +159,7 @@ for arg in sys.argv:
 args_or_envs = [
     'HEROKU_TEAM_NAME',
     'APP_PREFIX',
+    'APP_ORIGIN',
     'APP_NAME',
     'RELATED_APPS',
     'ADDON_PLAN',
