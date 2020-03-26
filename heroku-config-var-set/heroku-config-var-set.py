@@ -57,6 +57,14 @@ for i in args_or_envs:
 
 print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
+config_vars = {}
+if 'CONFIG_VARS' in args:
+    for pair in args['CONFIG_VARS'].split('|'):
+        (key, value) = pair.split('%')
+        config_vars[key] = value
+
+print("Config Vars: %s" % ( config_vars ))
+
 # local variables
 app_prefix = APP_PREFIX
 app_origin = APP_ORIGIN
