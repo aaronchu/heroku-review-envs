@@ -69,7 +69,18 @@ print("Config Vars: %s" % ( config_vars ))
 app_prefix = args['APP_PREFIX']
 app_origin = args['APP_ORIGIN']
 app_target = args['APP_TARGET']
-pr_num = args['PR_NUM']
+# Add the pr_num once we change to ENV in the workflows
+# pr_num = args['PR_NUM']
+# and remove block of code below
+if 'GITHUB_EVENT_PATH' in os.environ:
+    EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
+    with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
+        GH_EVENT = json.load(eventfile)
+
+pr = GH_EVENT['pull_request']
+pr_num = pr['number']
+# block to be removed ends here
+
 app_name = get_app_name(app_origin, app_target, pr_num, app_prefix)
 
 print("Local Vars: %s, %s, %s, %s, %s" % ( app_prefix, app_origin, app_target, pr_num, app_name ))
