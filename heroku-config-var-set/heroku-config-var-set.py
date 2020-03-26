@@ -66,11 +66,13 @@ if 'CONFIG_VARS' in args:
 print("Config Vars: %s" % ( config_vars ))
 
 # local variables
-app_prefix = APP_PREFIX
-app_origin = APP_ORIGIN
-app_target = APP_TARGET
-pr_num = PR_NUM
+app_prefix = ['APP_PREFIX']
+app_origin = ['APP_ORIGIN']
+app_target = ['APP_TARGET']
+pr_num = ['PR_NUM']
 app_name = get_app_name(app_origin, app_target, pr_num, app_prefix)
+
+print("Local Vars: %s, %s, %s, %s, %s" % ( app_prefix, app_origin, app_target, pr_num, app_name ))
 
 # main script
 
