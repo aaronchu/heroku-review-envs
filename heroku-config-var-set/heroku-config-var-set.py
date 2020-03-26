@@ -88,5 +88,6 @@ print("Local Vars: %s, %s, %s, %s, %s" % ( app_prefix, app_origin, app_target, p
 # main script
 
 print("Start - Setting Config Vars on %s" % ( app_name ))
+print("Config Vars: %s" % ( config_vars ))
 set_config_vars( app_name, config_vars )
 print("Done  - Setting Config Vars on %s\n" % ( app_name ))
