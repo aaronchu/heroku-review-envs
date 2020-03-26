@@ -32,8 +32,8 @@ def set_config_vars( app_name, config_vars ):
     if r.status_code != 200:
         sys.exit("There was an error setting config vars for %s - %s" % ( app_name, r.status_code ))
 
-# arguments
-
+# support arguments passed in via the github actions workflow via the syntax
+# args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
 args = {}
 for arg in sys.argv:
     pair = arg.split('=')
@@ -42,24 +42,26 @@ for arg in sys.argv:
     else:
         args[arg] = arg
 
-# print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
+# for quick testing, we want these to be alternatively passed in via environment
+args_or_envs = [
+    'HEROKU_TEAM_NAME',
+    'APP_PREFIX',
+    'APP_ORIGIN',
+    'APP_NAME',
+    'APP_TARGET',
+    'PR_NUM',
+]
+for i in args_or_envs:
+    if i not in args and i in os.environ:
+        args[i] = os.environ[i]
 
-config_vars = {}
-if 'CONFIG_VARS' in args:
-    for pair in args['CONFIG_VARS'].split('|'):
-        (key, value) = pair.split('%')
-        config_vars[key] = value
-
-# print("Config Vars: %s" % ( config_vars ))
-
-# Env variables
-app_prefix = os.environ['APP_PREFIX']
-app_origin = os.environ['APP_ORIGIN']
-app_target = os.environ['APP_TARGET']
-pr_num = os.environ['PR_NUM']
+print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
 # local variables
-
+app_prefix = APP_PREFIX
+app_origin = APP_ORIGIN
+app_target = APP_TARGET
+pr_num = PR_NUM
 app_name = get_app_name(app_origin, app_target, pr_num, app_prefix)
 
 # main script
