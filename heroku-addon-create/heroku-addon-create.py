@@ -169,7 +169,7 @@ args_or_envs = [
 for i in args_or_envs:
     if i not in args and i in os.environ:
         args[i] = os.environ[i]
-
+print ("App origin = " os.environ['APP_ORIGIN'])
 print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
 # GET THE INPUTS SET UP RIGHT ##################################################
