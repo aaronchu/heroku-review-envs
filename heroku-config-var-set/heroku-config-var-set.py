@@ -69,9 +69,14 @@ print("Config Vars: %s" % ( config_vars ))
 app_prefix = args['APP_PREFIX']
 app_origin = args['APP_ORIGIN']
 app_target = args['APP_TARGET']
-# Add the pr_num once we change to ENV in the workflows
-# pr_num = args['PR_NUM']
-# and remove block of code below
+
+# if required transform origin repo name into app name
+if app_origin == "real-server":
+    app_origin = "web"
+if app_origin == "inventory-service":
+    app_origin = "inventory"
+
+# extract the PR number from the GitHub event
 if 'GITHUB_EVENT_PATH' in os.environ:
     EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
     with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:

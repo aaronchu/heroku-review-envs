@@ -382,6 +382,11 @@ print ("Service Name: "+app_short_name)
 app_origin = app_short_name
 if 'APP_ORIGIN' in args:
     app_origin = args['APP_ORIGIN']
+    # if required transform origin repo name into app name
+    if app_origin == "real-server":
+        app_origin = "web"
+    if app_origin == "inventory-service":
+        app_origin = "inventory"
 print("Originating Service: "+app_origin)
 
 # pipeline name that we deploy into
@@ -490,7 +495,7 @@ if reviewapp is not None:
     app_id = reviewapp['id']
     print ("Found reviewapp id: " + app_id )
     print(json.dumps(reviewapp, sort_keys=True, indent=4))
-    
+
     # Originating App - doesn't need to be deployed because Review Apps Beta
     #   automatically deploys on push to the PR.
     # Related App - we do not deploy here b/c we don't want to disrupt the state

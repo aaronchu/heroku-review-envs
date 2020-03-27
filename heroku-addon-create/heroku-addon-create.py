@@ -182,6 +182,11 @@ print ("Service Name: "+app_short_name)
 app_origin = app_short_name
 if 'APP_ORIGIN' in args:
     app_origin = args['APP_ORIGIN']
+    # if required transform origin repo name into origin app name
+    if app_origin == "real-server":
+        app_origin = "web"
+    if app_origin == "inventory-service":
+        app_origin = "inventory"
 print("Originating Service: "+app_origin)
 
 # pull branch name from the GITHUB_REF

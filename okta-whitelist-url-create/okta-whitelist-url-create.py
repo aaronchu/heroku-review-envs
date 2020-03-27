@@ -78,6 +78,12 @@ print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not 
 # GET THE INPUTS SET UP RIGHT ##################################################
 
 app_origin = args['APP_ORIGIN']
+# if required transform origin repo name into app name
+if app_origin == "real-server":
+    app_origin = "web"
+if app_origin == "inventory-service":
+    app_origin = "inventory"
+
 print("Originating Service: "+app_origin)
 
 app_target = args['APP_TARGET']
