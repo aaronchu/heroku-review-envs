@@ -171,7 +171,7 @@ for i in args_or_envs:
         args[i] = os.environ[i]
 
 print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
-print ("App origin = " os.environ['APP_ORIGIN'])
+
 # GET THE INPUTS SET UP RIGHT ##################################################
 
 # determine the app_short_name - short name that references the type of service
