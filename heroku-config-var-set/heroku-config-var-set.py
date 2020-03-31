@@ -32,8 +32,8 @@ def set_config_vars( app_name, config_vars ):
     if r.status_code != 200:
         sys.exit("There was an error setting config vars for %s - %s" % ( app_name, r.status_code ))
 
-# arguments
-
+# support arguments passed in via the github actions workflow via the syntax
+# args = ["HEROKU_PIPELINE_NAME=github-actions-test"]
 args = {}
 for arg in sys.argv:
     pair = arg.split('=')
@@ -42,7 +42,20 @@ for arg in sys.argv:
     else:
         args[arg] = arg
 
-# print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
+# for quick testing, we want these to be alternatively passed in via environment
+args_or_envs = [
+    'HEROKU_TEAM_NAME',
+    'APP_PREFIX',
+    'APP_ORIGIN',
+    'APP_NAME',
+    'APP_TARGET',
+    'PR_NUM',
+]
+for i in args_or_envs:
+    if i not in args and i in os.environ:
+        args[i] = os.environ[i]
+
+print ("Found arguments: " + str( {k: v for k, v in args.items() if 'TOKEN' not in k and 'SECRET' not in k} ))
 
 config_vars = {}
 if 'CONFIG_VARS' in args:
@@ -50,13 +63,20 @@ if 'CONFIG_VARS' in args:
         (key, value) = pair.split('%')
         config_vars[key] = value
 
-# print("Config Vars: %s" % ( config_vars ))
+print("Config Vars: %s" % ( config_vars ))
 
+# local variables
 app_prefix = args['APP_PREFIX']
 app_origin = args['APP_ORIGIN']
 app_target = args['APP_TARGET']
-# pr_num = args['PR_NUM']
 
+# if required transform origin repo name into app name
+if app_origin == "real-server":
+    app_origin = "web"
+if app_origin == "inventory-service":
+    app_origin = "inventory"
+
+# extract the PR number from the GitHub event
 if 'GITHUB_EVENT_PATH' in os.environ:
     EVENT_FILE = os.environ['GITHUB_EVENT_PATH']
     with open(EVENT_FILE, 'r', encoding="utf-8") as eventfile:
@@ -64,13 +84,15 @@ if 'GITHUB_EVENT_PATH' in os.environ:
 
 pr = GH_EVENT['pull_request']
 pr_num = pr['number']
-
-# local variables
+# block to be removed ends here
 
 app_name = get_app_name(app_origin, app_target, pr_num, app_prefix)
+
+print("Local Vars: %s, %s, %s, %s, %s" % ( app_prefix, app_origin, app_target, pr_num, app_name ))
 
 # main script
 
 print("Start - Setting Config Vars on %s" % ( app_name ))
+print("Config Vars: %s" % ( config_vars ))
 set_config_vars( app_name, config_vars )
 print("Done  - Setting Config Vars on %s\n" % ( app_name ))
