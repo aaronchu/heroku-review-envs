@@ -236,13 +236,13 @@ def grant_review_app_access_to_user( app_name, email ):
     check_user = requests.get(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators/'+email, headers=HEADERS_HEROKU_REVIEW_PIPELINES)
     if check_user.status_code == 200:
         payload = {
-            'permissions': ['view', 'manage']
+            'permissions': ['view', 'manage', 'deploy', 'operate']
         }
         r = requests.patch(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators/'+email, headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
     else:
         payload = {
             'user': email,
-            'permissions': ['view', 'manage'],
+            'permissions': ['view', 'manage', 'deploy', 'operate'],
             'silent': True
         }
         r = requests.post(API_URL_HEROKU+'/teams/apps/'+app_name+'/collaborators', headers=HEADERS_HEROKU_REVIEW_PIPELINES, data=json.dumps(payload))
