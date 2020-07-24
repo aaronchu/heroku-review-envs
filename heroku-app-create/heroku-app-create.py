@@ -625,7 +625,7 @@ else:
 
     # # Update boot timeout
     print("Updating boot timeout...")
-    res = update_boot_timeout(app_name, 120)
+    res = update_boot_timeout(app_name, 180)
     if res.ok:
         print(res.json())
     else:
