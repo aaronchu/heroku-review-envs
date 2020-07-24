@@ -312,6 +312,13 @@ def add_pr_comment( repo, pr_id, message):
     comment = json.loads(r.text)
     return comment
 
+def update_boot_timeout(app_name, timeout):
+    data = json.dumps({
+        "value": timeout
+    })
+
+    url = "%s/apps/%s/limits/boot_timeout" % (API_URL_HEROKU, app_name)
+    return requests.put(url, headers=HEADERS_HEROKU, data=data)
 
 # Non-API-Related Functions ####################################################
 
@@ -615,6 +622,15 @@ else:
         print ("Attaching to pipeline...")
         if not add_to_pipeline( pipeline['id'], app['id'], 'development' ):
             sys.exit("Couldn't attach app %s to pipeline %s" % (app['id'],pipeline['id']))
+
+    # # Update boot timeout
+    print("Updating boot timeout...")
+    res = update_boot_timeout(app_name, 120)
+    if res.ok:
+        print(res.json())
+    else:
+        print("Error updating boot timeout!")
+        print(res.text)
 
     # grant access to all users
     users = get_team_members( args['HEROKU_TEAM_NAME'] )
