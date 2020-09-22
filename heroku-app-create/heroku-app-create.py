@@ -8,6 +8,7 @@ import sys
 import time
 import traceback
 import urllib.parse
+import base64
 
 # some constants
 TIMEOUT = 20
