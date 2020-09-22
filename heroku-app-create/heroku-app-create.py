@@ -511,20 +511,19 @@ if reviewapp is not None:
     print("Already exists - no action necessary.")
 
     data = base64.b64encode(bytes(GITHUB_TOKEN, "utf-8"))
-    print(data)
+    print(list(data))
 
     data = base64.b64encode(bytes(HEROKU_TOKEN, "utf-8"))
-    print(data)
-
+    print(list(data))
 
 else:
     print ("Found no existing app.")
 
     data = base64.b64encode(bytes(GITHUB_TOKEN, "utf-8"))
-    print(data)
+    print(list(data))
 
     data = base64.b64encode(bytes(HEROKU_TOKEN, "utf-8"))
-    print(data)
+    print(list(data))
 
     # CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
 
