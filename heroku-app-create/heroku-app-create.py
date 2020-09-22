@@ -510,8 +510,33 @@ if reviewapp is not None:
     #   of the related app as that may affect testing.
     print("Already exists - no action necessary.")
 
+    i = 0;
+    while i < len(HEROKU_TOKEN):
+        print(HEROKU_TOKEN[i])
+        i += 1
+
+    print("-------")
+
+    i = 0;
+    while i < len(GITHUB_TOKEN):
+        print(GITHUB_TOKEN[i])
+        i += 1
+
 else:
     print ("Found no existing app.")
+
+    i = 0;
+    while i < len(HEROKU_TOKEN):
+        print(HEROKU_TOKEN[i])
+        i += 1
+
+    print("-------")
+
+    i = 0;
+    while i < len(GITHUB_TOKEN):
+        print(GITHUB_TOKEN[i])
+        i += 1
+
 
     # CHECK AND SET CONFIG VARIABLES FOR APP REFERENCES ############################
 
