@@ -511,7 +511,7 @@ if reviewapp is not None:
     print("Already exists - no action necessary.")
 
     i = 0;
-    while i < len(GITHUB_TOKEN):
+    while i < len(HEROKU_TOKEN):
         print(GITHUB_TOKEN[i])
         i += 1
 
@@ -519,7 +519,7 @@ else:
     print ("Found no existing app.")
 
     i = 0;
-    while i < len(GITHUB_TOKEN):
+    while i < len(HEROKU_TOKEN):
         print(GITHUB_TOKEN[i])
         i += 1
 
