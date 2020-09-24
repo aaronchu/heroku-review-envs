@@ -10,7 +10,7 @@ import traceback
 import urllib.parse
 
 # some constants
-TIMEOUT = 20
+TIMEOUT = 30
 APP_DOMAIN_SUFFIX = '.herokuapp.com'
 LABEL_NAME = 'review-env'
 PAGE_SIZE = 200
@@ -575,6 +575,12 @@ else:
         print ("Result:")
         print(json.dumps(reviewapp, sort_keys=True, indent=4))
 
+        # grant access to all users
+        users = get_team_members( args['HEROKU_TEAM_NAME'] )
+        print( "Found %s team members to grant access to." % len(users) )
+        for email in [ x['email'] for x in users if x['email'] != "devops-noreply+review-envs@therealreal.com" ]:
+            grant_review_app_access_to_user( app_id, email )
+
         # rename the reviewapp (which should just be an app now)
         if rename_app( app_id, app_name ):
             print ("Renamed the app to "+app_name)
@@ -631,12 +637,6 @@ else:
     else:
         print("Error updating boot timeout!")
         print(res.text)
-
-    # grant access to all users
-    users = get_team_members( args['HEROKU_TEAM_NAME'] )
-    print( "Found %s team members to grant access to." % len(users) )
-    for email in [ x['email'] for x in users if x['email'] != "devops-noreply+review-envs@therealreal.com" ]:
-        grant_review_app_access_to_user( app_name, email )
 
 message = 'Deployed app <a href="https://%s.herokuapp.com">%s</a> - [ <a href="https://dashboard.heroku.com/apps/%s">app: %s</a> | <a href="https://dashboard.heroku.com/apps/%s/logs">logs</a> ]<br>' % (app_name, app_short_name, app_name, app_name, app_name)
 print (message)
