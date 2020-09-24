@@ -575,6 +575,12 @@ else:
         print ("Result:")
         print(json.dumps(reviewapp, sort_keys=True, indent=4))
 
+        # grant access to all users
+        users = get_team_members( args['HEROKU_TEAM_NAME'] )
+        print( "Found %s team members to grant access to." % len(users) )
+        for email in [ x['email'] for x in users if x['email'] != "devops-noreply+review-envs@therealreal.com" ]:
+            grant_review_app_access_to_user( app_id, email )
+
         # rename the reviewapp (which should just be an app now)
         if rename_app( app_id, app_name ):
             print ("Renamed the app to "+app_name)
